@@ -154,11 +154,21 @@
   }
 
   .chart-container {
-    position: relative;
+    display: grid;
+    grid-template-columns: 56px minmax(0, 1fr);
     width: 100%;
     height: 320px;
-    overflow-x: auto;
     background: transparent;
+  }
+  .chart-axis {
+    width: 56px;
+    height: 100%;
+    flex-shrink: 0;
+  }
+  .chart-scroll {
+    min-width: 0;
+    overflow-x: auto;
+    overflow-y: hidden;
   }
   canvas { display: block; }
 
@@ -503,7 +513,10 @@
       </div>
       <div class="chart-stage">
         <div class="chart-container">
-          <canvas id="main-chart"></canvas>
+          <canvas id="chart-axis" class="chart-axis"></canvas>
+          <div class="chart-scroll">
+            <canvas id="main-chart"></canvas>
+          </div>
         </div>
       </div>
     </div>
@@ -788,7 +801,7 @@ function showSignInScreen(errorMsg) {
   showAuthScreen(`
     <div class="auth-card">
       <div>
-        <h2>Evaluation Monitor</h2>
+        <h2>Search Evaluation Monitor</h2>
         <p style="margin-top:.5rem">This dashboard reads evaluation results from a GitHub repository. Sign in to continue.</p>
       </div>
       ${msg ? `<div class="auth-error">${esc(msg)}</div>` : ''}
@@ -806,7 +819,6 @@ function showSignInScreen(errorMsg) {
         </svg>
         Sign in with GitHub
       </button>
-      <p style="font-size:.8rem;text-align:center">Uses a GitHub App with Authorization Code Flow + PKCE.</p>
     </div>
   `);
   if (configured) document.getElementById('signin-btn').addEventListener('click', startSignIn);
@@ -1129,13 +1141,9 @@ async function loadDashboard(cfg) {
   const ndcgVal = latest.aggregated?.mean?.ndcg ?? null;
   const ndcgEl = document.getElementById('stat-ndcg');
   const ndcgDeltaEl = document.getElementById('delta-ndcg');
-  const ndcgDescEl = document.getElementById('ndcg-description');
   ndcgEl.textContent = fmt(ndcgVal);
   ndcgDeltaEl.textContent = '';
   ndcgDeltaEl.className = 'delta same';
-  ndcgDescEl.textContent = ndcgVal == null
-    ? 'Unavailable because every test in the latest report failed.'
-    : 'How close the search results are to a perfect ranking.';
 
   if (ndcgVal != null && previous?.aggregated?.mean?.ndcg != null) {
     const delta = ndcgVal - previous.aggregated.mean.ndcg;
@@ -1149,7 +1157,7 @@ async function loadDashboard(cfg) {
 
   // Chart
   drawMainChart(reports);
-  const chartContainer = document.querySelector('.chart-container');
+  const chartContainer = document.querySelector('.chart-scroll');
   chartContainer.scrollLeft = chartContainer.scrollWidth;
 
   // Table
@@ -1227,7 +1235,7 @@ async function loadDashboard(cfg) {
   window.addEventListener('resize', () => {
     clearTimeout(resizeTimer);
     resizeTimer = setTimeout(() => {
-      const container = document.querySelector('.chart-container');
+      const container = document.querySelector('.chart-scroll');
       const wasAtEnd = container.scrollLeft + container.clientWidth >= container.scrollWidth - 2;
       drawMainChart(reports);
       if (wasAtEnd) container.scrollLeft = container.scrollWidth;
@@ -1238,36 +1246,53 @@ async function loadDashboard(cfg) {
 // --- Chart drawing ---
 
 function drawMainChart(reports) {
+  const axisCanvas = document.getElementById('chart-axis');
   const canvas = document.getElementById('main-chart');
-  const container = canvas.parentElement;
+  const scroll = canvas.parentElement;
   const dpr = window.devicePixelRatio || 1;
   const n = reports.length;
-  const W = Math.max(container.getBoundingClientRect().width, (n - 1) * 80 + 70);
-  const H = container.getBoundingClientRect().height;
+  const axisW = Math.round(axisCanvas.getBoundingClientRect().width || 56);
+  const W = Math.max(scroll.getBoundingClientRect().width, (n - 1) * 80 + 40);
+  const H = scroll.getBoundingClientRect().height;
+
+  axisCanvas.width = axisW * dpr; axisCanvas.height = H * dpr;
+  axisCanvas.style.width = axisW + 'px'; axisCanvas.style.height = H + 'px';
 
   canvas.width = W * dpr; canvas.height = H * dpr;
   canvas.style.width = W + 'px'; canvas.style.height = H + 'px';
+  const axisCtx = axisCanvas.getContext('2d');
   const ctx = canvas.getContext('2d');
+  axisCtx.scale(dpr, dpr);
   ctx.scale(dpr, dpr);
 
-  const pad = { top: 20, right: 20, bottom: 50, left: 50 };
-  const plotW = W - pad.left - pad.right;
+  const pad = { top: 20, right: 20, bottom: 50, left: 0 };
+  const plotW = W - pad.right;
   const plotH = H - pad.top - pad.bottom;
 
-  ctx.fillStyle = '#0d1117';
-  ctx.fillRect(0, 0, W, H);
+  axisCtx.clearRect(0, 0, axisW, H);
+  ctx.clearRect(0, 0, W, H);
 
-  ctx.strokeStyle = '#21262d'; ctx.lineWidth = 1;
+  axisCtx.strokeStyle = 'rgba(255, 255, 255, 0.06)';
+  axisCtx.lineWidth = 1;
+  axisCtx.beginPath();
+  axisCtx.moveTo(axisW - 0.5, pad.top);
+  axisCtx.lineTo(axisW - 0.5, pad.top + plotH);
+  axisCtx.stroke();
+
+  axisCtx.fillStyle = getComputedStyle(document.documentElement).getPropertyValue('--text-muted').trim() || '#94a0ad';
+  axisCtx.font = '11px Inter, sans-serif';
+  axisCtx.textAlign = 'right';
+
+  ctx.strokeStyle = 'rgba(255, 255, 255, 0.06)'; ctx.lineWidth = 1;
   for (let i = 0; i <= 4; i++) {
     const y = pad.top + plotH * (1 - i / 4);
-    ctx.beginPath(); ctx.moveTo(pad.left, y); ctx.lineTo(pad.left + plotW, y); ctx.stroke();
-    ctx.fillStyle = '#8b949e'; ctx.font = '11px -apple-system, sans-serif'; ctx.textAlign = 'right';
-    ctx.fillText((i / 4).toFixed(2), pad.left - 8, y + 4);
+    ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(plotW, y); ctx.stroke();
+    axisCtx.fillText((i / 4).toFixed(2), axisW - 8, y + 4);
   }
 
-  ctx.textAlign = 'center'; ctx.fillStyle = '#8b949e'; ctx.font = '11px -apple-system, sans-serif';
+  ctx.textAlign = 'center'; ctx.fillStyle = getComputedStyle(document.documentElement).getPropertyValue('--text-muted').trim() || '#94a0ad'; ctx.font = '11px Inter, sans-serif';
   for (let i = 0; i < n; i++) {
-    const x = n === 1 ? pad.left + plotW / 2 : pad.left + (i / (n - 1)) * plotW;
+    const x = n === 1 ? plotW / 2 : (i / (n - 1)) * plotW;
     ctx.save(); ctx.translate(x, pad.top + plotH + 12); ctx.rotate(-Math.PI / 6); ctx.textAlign = 'right';
     ctx.fillText(formatDateShort(reports[i].timestamp), 0, 0); ctx.restore();
   }
@@ -1278,40 +1303,40 @@ function drawMainChart(reports) {
 
   if (points.length === 0) {
     ctx.fillStyle = '#8b949e';
-    ctx.font = '13px -apple-system, sans-serif';
+    ctx.font = '13px Inter, sans-serif';
     ctx.textAlign = 'center';
-    ctx.fillText('No successful evaluations available yet.', pad.left + plotW / 2, pad.top + plotH / 2);
+    ctx.fillText('No successful evaluations available yet.', plotW / 2, pad.top + plotH / 2);
     return;
   }
 
-  ctx.strokeStyle = '#bc8cff'; ctx.lineWidth = 2; ctx.lineJoin = 'round';
+  ctx.strokeStyle = '#b0b5d1'; ctx.lineWidth = 2; ctx.lineJoin = 'round';
   ctx.beginPath();
   for (let i = 0; i < points.length; i++) {
-    const x = n === 1 ? pad.left + plotW / 2 : pad.left + (points[i].index / (n - 1)) * plotW;
+    const x = n === 1 ? plotW / 2 : (points[i].index / (n - 1)) * plotW;
     const y = pad.top + plotH * (1 - points[i].value);
     if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
   }
   ctx.stroke();
 
   for (const point of points) {
-    const x = n === 1 ? pad.left + plotW / 2 : pad.left + (point.index / (n - 1)) * plotW;
+    const x = n === 1 ? plotW / 2 : (point.index / (n - 1)) * plotW;
     const y = pad.top + plotH * (1 - point.value);
-    ctx.fillStyle = '#bc8cff'; ctx.beginPath(); ctx.arc(x, y, 3.5, 0, Math.PI * 2); ctx.fill();
+    ctx.fillStyle = '#b0b5d1'; ctx.beginPath(); ctx.arc(x, y, 3.5, 0, Math.PI * 2); ctx.fill();
   }
 
-  canvas.addEventListener('mousemove', e => {
+  canvas.onmousemove = e => {
     const bounds = canvas.getBoundingClientRect();
     const mx = e.clientX - bounds.left, my = e.clientY - bounds.top;
     let closest = null, minDist = 20;
     for (const point of points) {
-      const x = n === 1 ? pad.left + plotW / 2 : pad.left + (point.index / (n - 1)) * plotW;
+      const x = n === 1 ? plotW / 2 : (point.index / (n - 1)) * plotW;
       const y = pad.top + plotH * (1 - point.value);
       const dist = Math.sqrt((mx - x) ** 2 + (my - y) ** 2);
       if (dist < minDist) { minDist = dist; closest = { i: point.index, val: point.value }; }
     }
     canvas.style.cursor = closest ? 'crosshair' : 'default';
     canvas.title = closest ? `nDCG: ${fmt(closest.val)} (${formatDate(reports[closest.i].timestamp)})` : '';
-  });
+  };
 }
 
 function drawSparkline(canvas, values, color) {
