@@ -375,7 +375,7 @@
   }
   .btn-secondary:hover { background: rgba(255, 255, 255, 0.05); }
 
-  .btn-link { background: none; border: none; color: var(--accent); cursor: pointer; font-size: 0.875rem; padding: 0; text-decoration: underline; text-underline-offset: 2px; }
+  .btn-link { background: none; border: none; color: var(--accent); cursor: pointer; font-size: 0.875rem; padding: 0; text-decoration: none; }
 
   .auth-error { color: var(--red); font-size: 0.875rem; background: rgba(255, 255, 255, 0.04); border: none; border-radius: 12px; padding: 0.75rem 0.9rem; }
 
@@ -486,9 +486,7 @@
   <header class="masthead">
     <div class="masthead-copy">
       <div>
-        <div class="eyebrow">Search Evaluation Dashboard</div>
-        <h1>Evaluation Monitor</h1>
-        <p class="masthead-intro">A cleaner, quieter read on ranking quality, trends, and per-query regressions across the latest evaluation reports.</p>
+        <h2>Search Evaluation Monitor</h2>
       </div>
       <div id="config-bar" class="config-info" style="display:none"></div>
     </div>
@@ -499,16 +497,11 @@
   <section class="hero-panel">
     <div class="hero-layout">
       <div class="hero-stat">
-        <div class="label">nDCG</div>
-        <div class="description" id="ndcg-description">How close the search results are to a perfect ranking.</div>
+        <div class="description">nDCG / How close the search results are to a perfect ranking.</div>
         <div class="value" id="stat-ndcg">--</div>
         <div class="delta same" id="delta-ndcg"></div>
       </div>
       <div class="chart-stage">
-        <div class="chart-label">
-          <span>Trend</span>
-          <strong>Performance over time</strong>
-        </div>
         <div class="chart-container">
           <canvas id="main-chart"></canvas>
         </div>
@@ -517,12 +510,6 @@
   </section>
 
   <section class="results-section">
-    <div class="results-header">
-      <div>
-        <h2>Per-Test Results</h2>
-        <p>Scores shown are from the latest report, with filtering to quickly isolate the queries that need attention.</p>
-      </div>
-    </div>
     <div class="table-shell">
       <div class="table-controls">
         <input type="text" id="search-input" placeholder="Filter by query...">
@@ -1130,8 +1117,8 @@ async function loadDashboard(cfg) {
     const bar = document.getElementById('config-bar');
     bar.style.display = 'flex';
     bar.innerHTML = [
-      `<span>Source: <strong>${esc(cfg.owner)}/${esc(cfg.repo)}</strong> @ ${esc(cfg.branch)}</span>`,
-      repoCfg?.workspace && `<span>API: <strong>${esc(repoCfg.workspace)}</strong>/api/<strong>${esc(repoCfg.api)}</strong>/e/${esc(repoCfg.endpoints.join('/e/'))}/results</span>`,
+      `<span>Source: <strong>${esc(cfg.owner)}/${esc(cfg.repo)}</strong></span>`,
+      repoCfg?.workspace && `<span>API: <strong>${esc(repoCfg.workspace)}</strong>/api/<strong>${esc(repoCfg.api)}</strong>/e/<strong>${esc(repoCfg.endpoints.join('</strong>/e/<strong>'))}</strong>/results</span>`,
       latest.summary     && `<span>Tests: <strong>${latest.summary.totalTests}</strong></span>`,
       `<span>Errors: <strong>${failedTests}</strong></span>`,
       `<span>Latest: <strong>${formatDate(latest.timestamp)}</strong></span>`,
