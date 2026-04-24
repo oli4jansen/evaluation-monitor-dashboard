@@ -4,6 +4,10 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Evaluation Monitor - Metrics Dashboard</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@100..900&family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&family=Space+Grotesk:wght@300..700&display=swap" rel="stylesheet">
+
 <style>
   :root {
     --bg: #0d1117;
@@ -21,7 +25,7 @@
   * { margin: 0; padding: 0; box-sizing: border-box; }
 
   body {
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;
+    font-family: "Inter", -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;
     background: var(--bg);
     color: var(--text);
     line-height: 1.5;
@@ -30,8 +34,9 @@
     margin: 0 auto;
   }
 
-  h1 { font-size: 1.5rem; font-weight: 600; margin-bottom: 0.25rem; }
-
+  h1 { font-size: 2.5rem; font-weight: 600; margin-bottom: 0.25rem; font-family: "Space Grotesk" }
+  h1 { font-size: 1.25rem; font-weight: 600; margin-bottom: 0.25rem; font-family: "Space Grotesk" }
+  
   .card {
     background: var(--surface);
     border: 1px solid var(--border);
@@ -51,9 +56,9 @@
 
   .hero-stat { text-align: center; padding: 1.5rem 0 1rem; }
   .hero-stat .label { font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; }
-  .hero-stat .value { font-size: 3rem; font-weight: 600; font-variant-numeric: tabular-nums; color: var(--purple); line-height: 1.2; }
+  .hero-stat .value { font-size: 3rem; font-weight: 600; font-variant-numeric: tabular-nums; font-family: "Space Grotesk"; color: var(--purple); line-height: 1.2; }
   .hero-stat .delta { font-size: 0.9rem; margin-top: 0.25rem; }
-  .hero-stat .description { font-size: 0.8rem; color: var(--text-muted); margin-top: 0.5rem; }
+  .hero-stat .description { font-size: 0.8rem; color: var(--text-muted); margin-bottom: 0.5rem; font-style: italic; }
 
   .delta.up { color: var(--green); }
   .delta.down { color: var(--red); }
@@ -99,35 +104,6 @@
   .metric-cell { text-align: right; white-space: nowrap; }
   .sparkline-cell { width: 80px; min-width: 80px; }
   .sparkline-cell canvas { vertical-align: middle; }
-  .status-cell { white-space: nowrap; }
-  .status-badge {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.35rem;
-    padding: 0.18rem 0.55rem;
-    border-radius: 999px;
-    border: 1px solid var(--border);
-    font-size: 0.72rem;
-    font-weight: 700;
-    letter-spacing: 0.05em;
-    text-transform: uppercase;
-  }
-  .status-badge.passed {
-    color: var(--green);
-    border-color: rgba(63, 185, 80, 0.35);
-    background: rgba(63, 185, 80, 0.08);
-  }
-  .status-badge.failed {
-    color: var(--red);
-    border-color: rgba(248, 81, 73, 0.35);
-    background: rgba(248, 81, 73, 0.08);
-  }
-  .status-dot {
-    width: 0.45rem;
-    height: 0.45rem;
-    border-radius: 50%;
-    background: currentColor;
-  }
   .error-text {
     color: var(--red);
     max-width: 360px;
@@ -171,7 +147,7 @@
   .loading { display: flex; align-items: center; justify-content: center; height: 200px; color: var(--text-muted); }
   .error { color: var(--red); padding: 1rem; border: 1px solid var(--red); border-radius: 6px; background: rgba(248,81,73,0.1); margin-bottom: 1rem; }
 
-  .config-info { display: flex; gap: 1.5rem; flex-wrap: wrap; font-size: 0.8rem; color: var(--text-muted); margin-bottom: 1rem; }
+  .config-info { display: flex; gap: 0.5rem; flex-wrap: wrap; font-size: 0.8rem; color: var(--text-muted); margin-bottom: 1rem; }
   .config-info span { background: var(--bg); padding: 0.2rem 0.6rem; border-radius: 4px; border: 1px solid var(--border); }
 
   /* Auth UI */
@@ -309,28 +285,11 @@
 <div id="config-bar" class="config-info" style="display:none"></div>
 
 <div class="card">
-  <div class="summary-strip" id="summary-strip">
-    <div class="summary-pill total">
-      <div class="pill-label">Total Tests</div>
-      <div class="pill-value" id="summary-total">--</div>
-      <div class="pill-note">Latest report</div>
-    </div>
-    <div class="summary-pill passed">
-      <div class="pill-label">Passed</div>
-      <div class="pill-value" id="summary-passed">--</div>
-      <div class="pill-note">Successful evaluations</div>
-    </div>
-    <div class="summary-pill failed">
-      <div class="pill-label">Failed</div>
-      <div class="pill-value" id="summary-failed">--</div>
-      <div class="pill-note">Timed out or errored</div>
-    </div>
-  </div>
   <div class="hero-stat">
     <div class="label">nDCG</div>
+    <div class="description" id="ndcg-description">How close the search results are to a perfect ranking.</div>
     <div class="value" id="stat-ndcg">--</div>
     <div class="delta same" id="delta-ndcg"></div>
-    <div class="description" id="ndcg-description">How close the search results are to a perfect ranking.</div>
   </div>
   <div class="chart-container">
     <canvas id="main-chart"></canvas>
@@ -347,7 +306,6 @@
       <thead>
         <tr>
           <th data-sort="query" class="sorted">Query</th>
-          <th data-sort="status">Status</th>
           <th data-sort="ndcg" class="metric-cell" title="How close the search results are to a perfect ranking.">nDCG</th>
           <th>Error</th>
           <th class="sparkline-cell"></th>
@@ -414,10 +372,6 @@ function formatDateShort(iso) {
 
 function reportHasNdcg(report) {
   return Boolean(report?.aggregated?.mean && typeof report.aggregated.mean.ndcg === 'number');
-}
-
-function testStatus(test) {
-  return test?.status || (test && test.metrics ? 'passed' : 'failed');
 }
 
 function testMetric(test, key) {
@@ -949,12 +903,9 @@ async function loadDashboard(cfg) {
     bar.style.display = 'flex';
     bar.innerHTML = [
       `<span>Source: <strong>${esc(cfg.owner)}/${esc(cfg.repo)}</strong> @ ${esc(cfg.branch)}</span>`,
-      repoCfg?.workspace && `<span>Workspace: <strong>${esc(repoCfg.workspace)}</strong></span>`,
-      repoCfg?.api       && `<span>API: <strong>${esc(repoCfg.api)}</strong></span>`,
-      repoCfg?.endpoints && `<span>Endpoints: <strong>${esc(repoCfg.endpoints.join(' > '))}</strong></span>`,
+      repoCfg?.workspace && `<span>API: <strong>${esc(repoCfg.workspace)}</strong>/api/<strong>${esc(repoCfg.api)}</strong>/e/${esc(repoCfg.endpoints.join('/e/'))}/results</span>`,
       latest.summary     && `<span>Tests: <strong>${latest.summary.totalTests}</strong></span>`,
-      `<span>Passed: <strong>${passedTests}</strong></span>`,
-      `<span>Failed: <strong>${failedTests}</strong></span>`,
+      `<span>Errors: <strong>${failedTests}</strong></span>`,
       `<span>Latest: <strong>${formatDate(latest.timestamp)}</strong></span>`,
     ].filter(Boolean).join('');
   }
@@ -1030,11 +981,6 @@ async function loadDashboard(cfg) {
       const errorText = status === 'failed' ? (t.error || 'Unknown error') : '—';
       tr.innerHTML = `
         <td class="query-text" title="${esc(queryText)}">${esc(queryText)}</td>
-        <td class="status-cell">
-          <span class="status-badge ${status}">
-            <span class="status-dot"></span>${esc(status)}
-          </span>
-        </td>
         <td class="metric-cell"${scoreStyle ? ` style="${scoreStyle}"` : ''}>${fmt(ndcg)}</td>
         <td class="${status === 'failed' ? 'error-text' : ''}" title="${esc(errorText)}">${esc(errorText)}</td>
         <td class="sparkline-cell">${status === 'passed' ? `<canvas width="64" height="24" data-test="${esc(t.testId)}" data-color="${sparkColor}"></canvas>` : ''}</td>
