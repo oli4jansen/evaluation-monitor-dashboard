@@ -896,10 +896,6 @@ async function loadDashboard(cfg) {
   const passedTests = latest.summary?.passedTests ?? latest.tests?.filter(t => testStatus(t) === 'passed').length ?? 0;
   const failedTests = latest.summary?.failedTests ?? Math.max(0, totalTests - passedTests);
 
-  document.getElementById('summary-total').textContent = fmtInt(totalTests);
-  document.getElementById('summary-passed').textContent = fmtInt(passedTests);
-  document.getElementById('summary-failed').textContent = fmtInt(failedTests);
-
   // Config bar
   {
     const repoCfg = latest.config;
