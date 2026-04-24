@@ -49,3 +49,4 @@ Set these repository variables in GitHub Actions:
 - `AUTH_API_BASE_URL`: the deployed Worker URL, for example `https://evaluation-monitor-auth.example.workers.dev`
 
 The Pages deploy workflow injects both values into `index.html` at build time.
+
