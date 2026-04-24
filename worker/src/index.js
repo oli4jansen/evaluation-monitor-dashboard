@@ -91,7 +91,7 @@ function requireFields(body, fields) {
 function buildCorsHeaders(request, env) {
   const origin = request.headers.get('Origin');
   const allowedOrigin = env.ALLOWED_ORIGIN || '*';
-  const allowOrigin = allowedOrigin === '*' ? '*' : origin === allowedOrigin ? origin : 'null';
+  const allowOrigin = resolveAllowedOrigin(origin, allowedOrigin);
 
   return {
     ...JSON_HEADERS,
@@ -100,6 +100,18 @@ function buildCorsHeaders(request, env) {
     'Access-Control-Allow-Headers': 'Content-Type, Accept',
     'Vary': 'Origin',
   };
+}
+
+function resolveAllowedOrigin(origin, allowedOrigin) {
+  if (allowedOrigin === '*') return '*';
+  if (!origin) return 'null';
+
+  const allowedOrigins = allowedOrigin
+    .split(',')
+    .map(value => value.trim())
+    .filter(Boolean);
+
+  return allowedOrigins.includes(origin) ? origin : 'null';
 }
 
 function json(data, status = 200, corsHeaders = {}) {
