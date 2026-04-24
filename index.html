@@ -1084,7 +1084,7 @@ async function loadDashboard(cfg) {
     bar.style.display = 'flex';
     bar.innerHTML = [
       `<span>${esc(cfg.owner)}/${esc(cfg.repo)}</span>`,
-      repoCfg?.workspace && `<span>${esc(repoCfg.workspace)}/api/${esc(repoCfg.api)}/e/${esc(repoCfg.endpoints.join('/e'))}/results</span>`,
+      repoCfg?.workspace && `<span>${esc(repoCfg.workspace)}/api/${esc(repoCfg.api)}/e/${esc(repoCfg.endpoints.join('/e/'))}/results</span>`,
     ].join('');
   }
 
