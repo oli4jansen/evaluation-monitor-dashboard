@@ -30,11 +30,7 @@
     margin: 0 auto;
   }
 
-  h1 {
-    font-size: 1.5rem;
-    font-weight: 600;
-    margin-bottom: 0.25rem;
-  }
+  h1 { font-size: 1.5rem; font-weight: 600; margin-bottom: 0.25rem; }
 
   .card {
     background: var(--surface);
@@ -53,60 +49,20 @@
     letter-spacing: 0.05em;
   }
 
-  /* Hero stat */
-  .hero-stat {
-    text-align: center;
-    padding: 1.5rem 0 1rem;
-  }
-
-  .hero-stat .label {
-    font-size: 0.75rem;
-    color: var(--text-muted);
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-  }
-
-  .hero-stat .value {
-    font-size: 3rem;
-    font-weight: 600;
-    font-variant-numeric: tabular-nums;
-    color: var(--purple);
-    line-height: 1.2;
-  }
-
-  .hero-stat .delta {
-    font-size: 0.9rem;
-    margin-top: 0.25rem;
-  }
-
-  .hero-stat .description {
-    font-size: 0.8rem;
-    color: var(--text-muted);
-    margin-top: 0.5rem;
-  }
+  .hero-stat { text-align: center; padding: 1.5rem 0 1rem; }
+  .hero-stat .label { font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; }
+  .hero-stat .value { font-size: 3rem; font-weight: 600; font-variant-numeric: tabular-nums; color: var(--purple); line-height: 1.2; }
+  .hero-stat .delta { font-size: 0.9rem; margin-top: 0.25rem; }
+  .hero-stat .description { font-size: 0.8rem; color: var(--text-muted); margin-top: 0.5rem; }
 
   .delta.up { color: var(--green); }
   .delta.down { color: var(--red); }
   .delta.same { color: var(--text-muted); }
 
-  .chart-container {
-    position: relative;
-    width: 100%;
-    height: 280px;
-    overflow-x: auto;
-  }
-
+  .chart-container { position: relative; width: 100%; height: 280px; overflow-x: auto; }
   canvas { display: block; }
 
-  /* Tests table */
-  .table-controls {
-    display: flex;
-    gap: 0.75rem;
-    margin-bottom: 1rem;
-    align-items: center;
-    flex-wrap: wrap;
-  }
-
+  .table-controls { display: flex; gap: 0.75rem; margin-bottom: 1rem; align-items: center; flex-wrap: wrap; }
   .table-controls input {
     background: var(--bg);
     border: 1px solid var(--border);
@@ -117,16 +73,10 @@
     flex: 1;
     min-width: 200px;
   }
-
   .table-controls input::placeholder { color: var(--text-muted); }
   .table-controls input:focus { outline: none; border-color: var(--accent); }
 
-  table {
-    width: 100%;
-    border-collapse: collapse;
-    font-size: 0.875rem;
-  }
-
+  table { width: 100%; border-collapse: collapse; font-size: 0.875rem; }
   thead th {
     text-align: left;
     padding: 0.5rem 0.75rem;
@@ -140,143 +90,247 @@
     user-select: none;
     white-space: nowrap;
   }
-
   thead th:hover { color: var(--text); }
   thead th.sorted { color: var(--accent); }
-
-  tbody td {
-    padding: 0.5rem 0.75rem;
-    border-bottom: 1px solid var(--border);
-    font-variant-numeric: tabular-nums;
-  }
-
+  tbody td { padding: 0.5rem 0.75rem; border-bottom: 1px solid var(--border); font-variant-numeric: tabular-nums; }
   tbody tr:hover { background: rgba(88, 166, 255, 0.04); }
 
-  .query-text {
-    max-width: 240px;
+  .query-text { max-width: 240px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .metric-cell { text-align: right; white-space: nowrap; }
+  .sparkline-cell { width: 80px; min-width: 80px; }
+  .sparkline-cell canvas { vertical-align: middle; }
+  .status-cell { white-space: nowrap; }
+  .status-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    padding: 0.18rem 0.55rem;
+    border-radius: 999px;
+    border: 1px solid var(--border);
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+  }
+  .status-badge.passed {
+    color: var(--green);
+    border-color: rgba(63, 185, 80, 0.35);
+    background: rgba(63, 185, 80, 0.08);
+  }
+  .status-badge.failed {
+    color: var(--red);
+    border-color: rgba(248, 81, 73, 0.35);
+    background: rgba(248, 81, 73, 0.08);
+  }
+  .status-dot {
+    width: 0.45rem;
+    height: 0.45rem;
+    border-radius: 50%;
+    background: currentColor;
+  }
+  .error-text {
+    color: var(--red);
+    max-width: 360px;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
   }
+  .summary-strip {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 0.9rem;
+    margin-bottom: 1.25rem;
+  }
+  .summary-pill {
+    background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0));
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 0.9rem 1rem;
+  }
+  .summary-pill .pill-label {
+    color: var(--text-muted);
+    font-size: 0.72rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+  }
+  .summary-pill .pill-value {
+    font-size: 1.6rem;
+    font-weight: 700;
+    margin-top: 0.15rem;
+    font-variant-numeric: tabular-nums;
+  }
+  .summary-pill .pill-note {
+    color: var(--text-muted);
+    font-size: 0.78rem;
+    margin-top: 0.2rem;
+  }
+  .summary-pill.passed .pill-value { color: var(--green); }
+  .summary-pill.failed .pill-value { color: var(--red); }
+  .summary-pill.total .pill-value { color: var(--accent); }
 
-  .metric-cell {
-    text-align: right;
+  .loading { display: flex; align-items: center; justify-content: center; height: 200px; color: var(--text-muted); }
+  .error { color: var(--red); padding: 1rem; border: 1px solid var(--red); border-radius: 6px; background: rgba(248,81,73,0.1); margin-bottom: 1rem; }
+
+  .config-info { display: flex; gap: 1.5rem; flex-wrap: wrap; font-size: 0.8rem; color: var(--text-muted); margin-bottom: 1rem; }
+  .config-info span { background: var(--bg); padding: 0.2rem 0.6rem; border-radius: 4px; border: 1px solid var(--border); }
+
+  /* Auth UI */
+  .auth-card {
+    max-width: 440px;
+    margin: 8vh auto 0;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 2rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+  }
+  .auth-card h2 { font-size: 1.1rem; font-weight: 600; }
+  .auth-card p { font-size: 0.875rem; color: var(--text-muted); line-height: 1.6; }
+
+  .device-code {
+    font-family: 'Courier New', monospace;
+    font-size: 1.75rem;
+    letter-spacing: 0.2em;
+    color: var(--accent);
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 0.75rem 1.25rem;
+    text-align: center;
+    user-select: all;
+  }
+
+  .repo-list { list-style: none; border: 1px solid var(--border); border-radius: 6px; overflow: hidden; max-height: 420px; overflow-y: auto; }
+  .repo-list li { padding: 0.65rem 1rem; border-bottom: 1px solid var(--border); display: flex; flex-direction: column; gap: 0.25rem; font-size: 0.875rem; }
+  .repo-list li:last-child { border-bottom: none; }
+  .repo-row { display: flex; align-items: center; gap: 0.5rem; cursor: pointer; }
+  .repo-row:hover .repo-name { color: var(--accent); }
+  .repo-list li.selected { background: rgba(88,166,255,0.06); }
+  .repo-name { flex: 1; font-weight: 500; }
+  .repo-date { color: var(--text-muted); font-size: 0.8rem; white-space: nowrap; }
+
+  .badge-private {
+    font-size: 0.7rem;
+    background: rgba(88,166,255,0.1);
+    color: var(--accent);
+    border: 1px solid rgba(88,166,255,0.3);
+    border-radius: 4px;
+    padding: 0.1rem 0.4rem;
     white-space: nowrap;
   }
 
-  .sparkline-cell {
-    width: 80px;
-    min-width: 80px;
-  }
-
-  .sparkline-cell canvas {
-    vertical-align: middle;
-  }
-
-  .loading {
+  .btn-primary {
+    background: var(--accent);
+    color: #000;
+    border: none;
+    border-radius: 6px;
+    padding: 0.6rem 1.2rem;
+    font-size: 0.9rem;
+    font-weight: 600;
+    cursor: pointer;
     display: flex;
     align-items: center;
     justify-content: center;
-    height: 200px;
-    color: var(--text-muted);
+    gap: 0.5rem;
+    width: 100%;
+    text-decoration: none;
   }
+  .btn-primary:hover { opacity: 0.9; }
 
-  .error {
-    color: var(--red);
-    padding: 1rem;
-    border: 1px solid var(--red);
-    border-radius: 6px;
-    background: rgba(248, 81, 73, 0.1);
-  }
-
-  .config-info {
-    display: flex;
-    gap: 1.5rem;
-    flex-wrap: wrap;
-    font-size: 0.8rem;
-    color: var(--text-muted);
-    margin-bottom: 1rem;
-  }
-
-  .config-info span {
-    background: var(--bg);
-    padding: 0.2rem 0.6rem;
-    border-radius: 4px;
+  .btn-secondary {
+    background: transparent;
+    color: var(--text);
     border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 0.5rem 1rem;
+    font-size: 0.875rem;
+    cursor: pointer;
   }
+  .btn-secondary:hover { border-color: var(--text-muted); }
+
+  .btn-link { background: none; border: none; color: var(--accent); cursor: pointer; font-size: 0.875rem; padding: 0; text-decoration: underline; text-underline-offset: 2px; }
+
+  .auth-error { color: var(--red); font-size: 0.875rem; background: rgba(248,81,73,0.1); border: 1px solid rgba(248,81,73,0.3); border-radius: 6px; padding: 0.6rem 0.9rem; }
+
+  .spinner {
+    display: inline-block;
+    width: 14px;
+    height: 14px;
+    border: 2px solid var(--border);
+    border-top-color: var(--accent);
+    border-radius: 50%;
+    animation: spin 0.7s linear infinite;
+    flex-shrink: 0;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  .user-bar { display: flex; align-items: center; gap: 0.75rem; margin-bottom: 1rem; font-size: 0.875rem; color: var(--text-muted); }
+  .user-bar img { width: 24px; height: 24px; border-radius: 50%; border: 1px solid var(--border); }
 
   @media (max-width: 768px) {
     body { padding: 1rem; }
     .hero-stat .value { font-size: 2.25rem; }
+    .summary-strip { grid-template-columns: 1fr; }
   }
 </style>
 </head>
 <body>
 
-<button id="settings-btn" title="Configure GitHub source"
-  style="position:fixed;top:1rem;right:1rem;background:var(--surface);border:1px solid var(--border);
-         border-radius:6px;padding:0.4rem 0.7rem;color:var(--text);cursor:pointer;font-size:1rem;z-index:100">
-  &#9881;
-</button>
+<div id="auth-screen" style="display:none;position:fixed;inset:0;background:var(--bg);z-index:300;overflow-y:auto;padding:2rem 1rem"></div>
 
-<div id="settings-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);
-     z-index:200;align-items:center;justify-content:center">
+<div id="settings-panel" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:200;align-items:center;justify-content:center">
   <div style="background:var(--surface);border:1px solid var(--border);border-radius:8px;
-              padding:1.5rem;width:min(480px,90vw);display:flex;flex-direction:column;gap:1rem">
-    <h2 style="margin:0;font-size:1rem">GitHub Source</h2>
-    <label style="font-size:.875rem;display:flex;flex-direction:column;gap:.3rem">Owner
-      <input id="cfg-owner" placeholder="your-org"
-        style="background:var(--bg);border:1px solid var(--border);border-radius:4px;
-               padding:.4rem .6rem;color:var(--text);font-size:.875rem">
-    </label>
-    <label style="font-size:.875rem;display:flex;flex-direction:column;gap:.3rem">Repository
-      <input id="cfg-repo" placeholder="your-repo"
-        style="background:var(--bg);border:1px solid var(--border);border-radius:4px;
-               padding:.4rem .6rem;color:var(--text);font-size:.875rem">
-    </label>
-    <label style="font-size:.875rem;display:flex;flex-direction:column;gap:.3rem">Branch
-      <input id="cfg-branch" placeholder="main"
-        style="background:var(--bg);border:1px solid var(--border);border-radius:4px;
-               padding:.4rem .6rem;color:var(--text);font-size:.875rem">
-    </label>
+              padding:1.5rem;width:min(400px,90vw);display:flex;flex-direction:column;gap:1rem">
+    <h2 style="font-size:1rem;margin:0">Settings</h2>
     <label style="font-size:.875rem;display:flex;flex-direction:column;gap:.3rem">Results path
       <input id="cfg-path" placeholder="results"
         style="background:var(--bg);border:1px solid var(--border);border-radius:4px;
                padding:.4rem .6rem;color:var(--text);font-size:.875rem">
     </label>
-    <label style="font-size:.875rem;display:flex;flex-direction:column;gap:.3rem">
-      Personal Access Token <span style="color:var(--text-muted);font-weight:400">(private repos — stored in localStorage only)</span>
-      <input id="cfg-token" type="password" placeholder="ghp_..."
-        style="background:var(--bg);border:1px solid var(--border);border-radius:4px;
-               padding:.4rem .6rem;color:var(--text);font-size:.875rem">
-    </label>
     <div style="display:flex;gap:.75rem;justify-content:flex-end">
-      <button id="cfg-cancel"
-        style="background:transparent;border:1px solid var(--border);border-radius:6px;
-               padding:.4rem .9rem;color:var(--text);cursor:pointer;font-size:.875rem">
-        Cancel
-      </button>
-      <button id="cfg-save"
-        style="background:var(--accent);border:none;border-radius:6px;
-               padding:.4rem .9rem;color:#000;cursor:pointer;font-size:.875rem;font-weight:600">
-        Save &amp; Reload
-      </button>
+      <button id="cfg-cancel" class="btn-secondary">Cancel</button>
+      <button id="cfg-save" class="btn-primary" style="width:auto">Save &amp; Reload</button>
+    </div>
+    <hr style="border:none;border-top:1px solid var(--border)">
+    <div style="display:flex;gap:.75rem;flex-wrap:wrap">
+      <button id="change-repo-btn" class="btn-secondary">Change repository</button>
+      <button id="sign-out-btn" style="background:transparent;color:var(--red);border:1px solid rgba(248,81,73,.4);border-radius:6px;padding:.5rem 1rem;font-size:.875rem;cursor:pointer">Sign out</button>
     </div>
   </div>
 </div>
 
+<div id="user-bar" class="user-bar" style="display:none"></div>
+
 <h1>Evaluation Monitor</h1>
 
 <div id="error-container"></div>
-
 <div id="config-bar" class="config-info" style="display:none"></div>
 
 <div class="card">
+  <div class="summary-strip" id="summary-strip">
+    <div class="summary-pill total">
+      <div class="pill-label">Total Tests</div>
+      <div class="pill-value" id="summary-total">--</div>
+      <div class="pill-note">Latest report</div>
+    </div>
+    <div class="summary-pill passed">
+      <div class="pill-label">Passed</div>
+      <div class="pill-value" id="summary-passed">--</div>
+      <div class="pill-note">Successful evaluations</div>
+    </div>
+    <div class="summary-pill failed">
+      <div class="pill-label">Failed</div>
+      <div class="pill-value" id="summary-failed">--</div>
+      <div class="pill-note">Timed out or errored</div>
+    </div>
+  </div>
   <div class="hero-stat">
     <div class="label">nDCG</div>
     <div class="value" id="stat-ndcg">--</div>
     <div class="delta same" id="delta-ndcg"></div>
-    <div class="description">How close the search results are to a perfect ranking.</div>
+    <div class="description" id="ndcg-description">How close the search results are to a perfect ranking.</div>
   </div>
   <div class="chart-container">
     <canvas id="main-chart"></canvas>
@@ -293,12 +347,14 @@
       <thead>
         <tr>
           <th data-sort="query" class="sorted">Query</th>
+          <th data-sort="status">Status</th>
           <th data-sort="ndcg" class="metric-cell" title="How close the search results are to a perfect ranking.">nDCG</th>
+          <th>Error</th>
           <th class="sparkline-cell"></th>
         </tr>
       </thead>
       <tbody id="tests-body">
-        <tr><td colspan="3" class="loading">Loading...</td></tr>
+        <tr><td colspan="5" class="loading">Loading...</td></tr>
       </tbody>
     </table>
   </div>
@@ -307,68 +363,489 @@
 <script type="module">
 import { Octokit } from 'https://esm.sh/@octokit/rest';
 
-(async function() {
-  // --- GitHub config ---
+/*
+ * SETUP (one time):
+ * 1. GitHub Settings → Developer Settings → OAuth Apps → New OAuth App
+ * 2. Homepage URL: URL where this file is served
+ * 3. Check "Enable Device Flow"
+ * 4. Store the Client ID in repo Settings → Secrets and variables → Actions → Variables
+ *    as OAUTH_CLIENT_ID. The deploy workflow injects it below at build time.
+ */
+const CLIENT_ID = 'YOUR_OAUTH_APP_CLIENT_ID_HERE';
 
-  function getConfig() {
-    const p = new URLSearchParams(location.search);
+const LS = {
+  TOKEN:      'gh_token',
+  OWNER:      'gh_owner',
+  REPO:       'gh_repo',
+  BRANCH:     'gh_branch',
+  PATH:       'gh_path',
+  USER_LOGIN: 'gh_user_login',
+  USER_AVATAR:'gh_user_avatar',
+};
+
+const sleep = ms => new Promise(r => setTimeout(r, ms));
+
+// --- Helpers ---
+
+function fmt(v) { return v == null ? '--' : v.toFixed(3); }
+function fmtInt(v) { return Number.isFinite(v) ? String(v) : '--'; }
+
+function esc(s) {
+  const d = document.createElement('div');
+  d.textContent = String(s ?? '');
+  return d.innerHTML;
+}
+
+function formatDate(iso) {
+  try {
+    return new Date(iso).toLocaleString('en-GB', { year:'numeric', month:'short', day:'numeric', hour:'2-digit', minute:'2-digit' });
+  } catch { return iso; }
+}
+
+function formatDateShort(iso) {
+  try {
+    return new Date(iso).toLocaleString('en-GB', { month:'short', day:'numeric', hour:'2-digit', minute:'2-digit' });
+  } catch { return iso; }
+}
+
+function reportHasNdcg(report) {
+  return Boolean(report?.aggregated?.mean && typeof report.aggregated.mean.ndcg === 'number');
+}
+
+function testStatus(test) {
+  return test?.status || (test && test.metrics ? 'passed' : 'failed');
+}
+
+function testMetric(test, key) {
+  return testStatus(test) === 'passed' ? test?.metrics?.[key] ?? null : null;
+}
+
+// --- State ---
+
+function deriveState() {
+  const p = new URLSearchParams(location.search);
+  const urlOwner = p.get('owner');
+  const urlRepo  = p.get('repo');
+  const token    = localStorage.getItem(LS.TOKEN);
+
+  if (urlOwner && urlRepo) {
     return {
-      owner:  p.get('owner')  || localStorage.getItem('gh_owner')  || '',
-      repo:   p.get('repo')   || localStorage.getItem('gh_repo')   || '',
-      branch: p.get('branch') || localStorage.getItem('gh_branch') || 'main',
-      path:   p.get('path')   || localStorage.getItem('gh_path')   || 'results',
-      token:  localStorage.getItem('gh_token') || null,
+      state:  'REPO_SELECTED',
+      token:  token || null,
+      owner:  urlOwner,
+      repo:   urlRepo,
+      branch: p.get('branch') || localStorage.getItem(LS.BRANCH) || 'main',
+      path:   p.get('path')   || localStorage.getItem(LS.PATH)   || 'results',
     };
   }
 
-  function openSettingsModal() {
-    const c = getConfig();
-    document.getElementById('cfg-owner').value  = c.owner;
-    document.getElementById('cfg-repo').value   = c.repo;
-    document.getElementById('cfg-branch').value = c.branch;
-    document.getElementById('cfg-path').value   = c.path;
-    document.getElementById('cfg-token').value  = c.token || '';
-    document.getElementById('settings-modal').style.display = 'flex';
+  if (!token) return { state: 'UNAUTHENTICATED' };
+
+  const owner = localStorage.getItem(LS.OWNER) || '';
+  const repo  = localStorage.getItem(LS.REPO)  || '';
+  if (owner && repo) {
+    return {
+      state:  'REPO_SELECTED',
+      token,
+      owner,
+      repo,
+      branch: localStorage.getItem(LS.BRANCH) || 'main',
+      path:   localStorage.getItem(LS.PATH)   || 'results',
+    };
   }
 
-  document.getElementById('settings-btn').addEventListener('click', openSettingsModal);
-  document.getElementById('cfg-cancel').addEventListener('click', () => {
-    document.getElementById('settings-modal').style.display = 'none';
-  });
-  document.getElementById('cfg-save').addEventListener('click', () => {
-    localStorage.setItem('gh_owner',  document.getElementById('cfg-owner').value.trim());
-    localStorage.setItem('gh_repo',   document.getElementById('cfg-repo').value.trim());
-    localStorage.setItem('gh_branch', document.getElementById('cfg-branch').value.trim());
-    localStorage.setItem('gh_path',   document.getElementById('cfg-path').value.trim());
-    const tok = document.getElementById('cfg-token').value.trim();
-    if (tok) localStorage.setItem('gh_token', tok);
-    else localStorage.removeItem('gh_token');
-    location.reload();
+  return { state: 'AUTHENTICATED', token };
+}
+
+function signOut() {
+  Object.values(LS).forEach(k => localStorage.removeItem(k));
+  location.reload();
+}
+
+// --- Auth screens ---
+
+function showAuthScreen(html) {
+  const el = document.getElementById('auth-screen');
+  el.style.display = 'block';
+  el.innerHTML = html;
+}
+
+function showSignInScreen(errorMsg) {
+  const urlError = new URLSearchParams(location.search).get('error');
+  const msg = errorMsg || (urlError === 'session_expired' ? 'Your session expired. Please sign in again.' : null);
+
+  showAuthScreen(`
+    <div class="auth-card">
+      <div>
+        <h2>Evaluation Monitor</h2>
+        <p style="margin-top:.5rem">This dashboard reads evaluation results from a GitHub repository. Sign in to continue.</p>
+      </div>
+      ${msg ? `<div class="auth-error">${esc(msg)}</div>` : ''}
+      <button class="btn-primary" id="signin-btn">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true">
+          <path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38
+                   0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13
+                   -.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66
+                   .07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15
+                   -.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0
+                   1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82
+                   1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01
+                   1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/>
+        </svg>
+        Sign in with GitHub
+      </button>
+      <p style="font-size:.8rem;text-align:center">Uses GitHub Device Flow. Your credentials are never shared with this app.</p>
+    </div>
+  `);
+  document.getElementById('signin-btn').addEventListener('click', startDeviceFlow);
+}
+
+async function startDeviceFlow() {
+  showAuthScreen(`
+    <div class="auth-card">
+      <h2>Connecting to GitHub...</h2>
+      <div style="display:flex;align-items:center;gap:.75rem;color:var(--text-muted);font-size:.875rem">
+        <span class="spinner"></span> Requesting authorization code...
+      </div>
+    </div>
+  `);
+
+  try {
+    const res = await fetch('https://github.com/login/device/code', {
+      method: 'POST',
+      headers: { 'Accept': 'application/json', 'Content-Type': 'application/json' },
+      body: JSON.stringify({ client_id: CLIENT_ID, scope: 'repo read:user' }),
+    });
+    const data = await res.json();
+    if (!data.device_code) throw new Error(data.error_description || data.error || 'Failed to get device code');
+    showDeviceCodeScreen(data);
+    pollForToken(data.device_code, data.interval || 5, data.expires_in || 900);
+  } catch (e) {
+    showSignInScreen(`Failed to start authorization: ${e.message}`);
+  }
+}
+
+function showDeviceCodeScreen({ user_code, verification_uri, expires_in }) {
+  const expiryMin = Math.round((expires_in || 900) / 60);
+  showAuthScreen(`
+    <div class="auth-card">
+      <div>
+        <h2>Authorize in GitHub</h2>
+        <p style="margin-top:.5rem">Enter this code at <strong>github.com/login/device</strong>:</p>
+      </div>
+      <div class="device-code">${esc(user_code)}</div>
+      <div style="display:flex;gap:.75rem">
+        <button class="btn-secondary" id="copy-code-btn" style="flex:1">Copy code</button>
+        <a href="${esc(verification_uri)}" target="_blank" rel="noopener" class="btn-primary" style="flex:1">Open GitHub</a>
+      </div>
+      <div style="display:flex;align-items:center;gap:.75rem;color:var(--text-muted);font-size:.875rem">
+        <span class="spinner"></span>
+        <span id="poll-status">Waiting for authorization...</span>
+      </div>
+      <p style="font-size:.8rem;color:var(--text-muted)">Code expires in ~${expiryMin} min.</p>
+      <button class="btn-link" id="cancel-device-btn">Cancel</button>
+    </div>
+  `);
+
+  document.getElementById('copy-code-btn').addEventListener('click', async () => {
+    try {
+      await navigator.clipboard.writeText(user_code);
+      const btn = document.getElementById('copy-code-btn');
+      if (btn) { btn.textContent = 'Copied!'; setTimeout(() => { if (btn.isConnected) btn.textContent = 'Copy code'; }, 2000); }
+    } catch {}
   });
 
-  function showError(msg) {
-    document.getElementById('error-container').innerHTML =
-      `<div class="error">${msg}</div>`;
+  document.getElementById('cancel-device-btn').addEventListener('click', () => {
+    window._cancelDeviceFlow = true;
+    showSignInScreen();
+  });
+}
+
+async function pollForToken(deviceCode, intervalSec, expiresIn) {
+  window._cancelDeviceFlow = false;
+  let pollMs = intervalSec * 1000;
+  const deadline = Date.now() + expiresIn * 1000;
+
+  while (Date.now() < deadline) {
+    await sleep(pollMs);
+    if (window._cancelDeviceFlow) return;
+
+    try {
+      const res = await fetch('https://github.com/login/oauth/access_token', {
+        method: 'POST',
+        headers: { 'Accept': 'application/json', 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          client_id: CLIENT_ID,
+          device_code: deviceCode,
+          grant_type: 'urn:ietf:params:oauth:grant-type:device_code',
+        }),
+      });
+      const data = await res.json();
+
+      if (data.access_token) {
+        localStorage.setItem(LS.TOKEN, data.access_token);
+        await cacheUserInfo(data.access_token);
+        await showRepoPicker(data.access_token);
+        return;
+      }
+
+      if (data.error === 'slow_down') { pollMs += 5000; continue; }
+      if (data.error === 'authorization_pending') continue;
+      if (data.error === 'expired_token') {
+        setPollStatus('Code expired.', true);
+        setTimeout(() => showSignInScreen('Authorization code expired. Please try again.'), 1500);
+        return;
+      }
+      if (data.error === 'access_denied') {
+        setTimeout(() => showSignInScreen('Authorization was denied.'), 500);
+        return;
+      }
+      setPollStatus(`Error: ${data.error_description || data.error}`, true);
+      return;
+    } catch {
+      setPollStatus('Network error, retrying...');
+    }
   }
 
-  const ghCfg = getConfig();
-  let reports = [];
+  setPollStatus('Code expired.', true);
+  setTimeout(() => showSignInScreen('Authorization code expired. Please try again.'), 1500);
+}
 
-  if (!ghCfg.owner || !ghCfg.repo) {
-    showError('No GitHub repository configured. Click &#9881; to set owner, repo, branch, and (optionally) a Personal Access Token.');
-    openSettingsModal();
-    return;
+function setPollStatus(msg, isError) {
+  const el = document.getElementById('poll-status');
+  if (el) { el.textContent = msg; if (isError) el.style.color = 'var(--red)'; }
+}
+
+async function cacheUserInfo(token) {
+  try {
+    const { data } = await new Octokit({ auth: token }).rest.users.getAuthenticated();
+    localStorage.setItem(LS.USER_LOGIN, data.login);
+    localStorage.setItem(LS.USER_AVATAR, data.avatar_url);
+  } catch {}
+}
+
+async function showRepoPicker(token) {
+  const login  = localStorage.getItem(LS.USER_LOGIN)  || '';
+  const avatar = localStorage.getItem(LS.USER_AVATAR) || '';
+
+  showAuthScreen(`
+    <div class="auth-card" style="max-width:560px">
+      <div style="display:flex;align-items:center;gap:.75rem">
+        ${avatar ? `<img src="${esc(avatar)}" width="32" height="32" style="border-radius:50%;border:1px solid var(--border)" alt="">` : ''}
+        <div style="flex:1">
+          <div style="font-weight:600">${login ? `@${esc(login)}` : 'Signed in'}</div>
+          <div style="font-size:.8rem;color:var(--text-muted)">Select a repository</div>
+        </div>
+        <button class="btn-link" id="signout-picker-btn">Sign out</button>
+      </div>
+      <input type="text" id="repo-search" placeholder="Filter repositories..." autocomplete="off"
+        style="background:var(--bg);border:1px solid var(--border);border-radius:6px;
+               padding:.4rem .75rem;color:var(--text);font-size:.875rem;width:100%">
+      <div id="repo-list-container">
+        <div style="display:flex;align-items:center;gap:.75rem;color:var(--text-muted);font-size:.875rem">
+          <span class="spinner"></span> Loading repositories...
+        </div>
+      </div>
+      <div id="load-more-container" style="display:none;text-align:center">
+        <button class="btn-secondary" id="load-more-btn">Load more</button>
+      </div>
+    </div>
+  `);
+
+  document.getElementById('signout-picker-btn').addEventListener('click', signOut);
+
+  const octokit = new Octokit({ auth: token });
+  let allRepos = [];
+  let filterText = '';
+  let currentPage = 1;
+  let hasMore = false;
+
+  async function fetchPage(page) {
+    const resp = await octokit.rest.repos.listForAuthenticatedUser({ per_page: 100, sort: 'updated', page });
+    hasMore = (resp.headers.link || '').includes('rel="next"');
+    return resp.data;
   }
 
   try {
-    const octokit = new Octokit(ghCfg.token ? { auth: ghCfg.token } : {});
-    const base = { owner: ghCfg.owner, repo: ghCfg.repo, ref: ghCfg.branch };
+    allRepos = await fetchPage(1);
+    renderRepoList(allRepos, filterText, token);
+    syncLoadMore();
+  } catch (e) {
+    const c = document.getElementById('repo-list-container');
+    if (c) c.innerHTML = `<div class="auth-error">Failed to load repositories: ${esc(e.message)}</div>`;
+  }
 
-    const { data: entries } = await octokit.rest.repos.getContent({ ...base, path: ghCfg.path });
-    if (!Array.isArray(entries)) throw new Error(`Expected a directory at "${ghCfg.path}" but got a file.`);
+  function syncLoadMore() {
+    const container = document.getElementById('load-more-container');
+    if (container) container.style.display = hasMore ? 'block' : 'none';
+  }
+
+  document.getElementById('load-more-container').addEventListener('click', async e => {
+    if (e.target.id !== 'load-more-btn') return;
+    e.target.textContent = 'Loading...';
+    e.target.disabled = true;
+    try {
+      currentPage++;
+      allRepos = allRepos.concat(await fetchPage(currentPage));
+      renderRepoList(allRepos, filterText, token);
+      syncLoadMore();
+    } catch {
+      e.target.textContent = 'Load more';
+      e.target.disabled = false;
+    }
+  });
+
+  document.getElementById('repo-search').addEventListener('input', e => {
+    filterText = e.target.value;
+    renderRepoList(allRepos, filterText, token);
+  });
+}
+
+function renderRepoList(repos, filter, token) {
+  const container = document.getElementById('repo-list-container');
+  if (!container) return;
+
+  const filtered = filter
+    ? repos.filter(r => r.full_name.toLowerCase().includes(filter.toLowerCase()))
+    : repos;
+
+  if (filtered.length === 0) {
+    container.innerHTML = `<div style="color:var(--text-muted);font-size:.875rem;padding:.75rem">No repositories found.</div>`;
+    return;
+  }
+
+  const ul = document.createElement('ul');
+  ul.className = 'repo-list';
+
+  for (const repo of filtered) {
+    const li = document.createElement('li');
+    const row = document.createElement('div');
+    row.className = 'repo-row';
+    row.innerHTML = `
+      <span class="repo-name">${esc(repo.full_name)}</span>
+      ${repo.private ? '<span class="badge-private">private</span>' : ''}
+      <span class="repo-date">${formatDateShort(repo.pushed_at)}</span>
+    `;
+    row.addEventListener('click', () => expandRepoBranches(li, repo, token));
+    li.appendChild(row);
+    ul.appendChild(li);
+  }
+
+  container.innerHTML = '';
+  container.appendChild(ul);
+}
+
+async function expandRepoBranches(li, repo, token) {
+  // Collapse any previously expanded row
+  document.querySelectorAll('.repo-list li').forEach(l => {
+    l.querySelector('.branch-panel')?.remove();
+    l.classList.remove('selected');
+  });
+  li.classList.add('selected');
+
+  const panel = document.createElement('div');
+  panel.className = 'branch-panel';
+  panel.style.cssText = 'padding-top:.5rem;border-top:1px solid var(--border);margin-top:.25rem;font-size:.875rem';
+  panel.innerHTML = `<div style="display:flex;align-items:center;gap:.5rem;color:var(--text-muted)"><span class="spinner"></span> Loading branches...</div>`;
+  li.appendChild(panel);
+
+  const defaultBranch = repo.default_branch || 'main';
+  let branches;
+
+  try {
+    const { data } = await new Octokit({ auth: token }).rest.repos.listBranches({
+      owner: repo.owner.login, repo: repo.name, per_page: 50,
+    });
+    branches = data;
+  } catch {
+    panel.innerHTML = `
+      <span style="color:var(--text-muted)">Could not load branches. </span>
+      <button class="btn-link">Use default (${esc(defaultBranch)})</button>
+    `;
+    panel.querySelector('button').addEventListener('click', () => selectRepo(repo.owner.login, repo.name, defaultBranch));
+    return;
+  }
+
+  const select = document.createElement('select');
+  select.style.cssText = 'background:var(--bg);border:1px solid var(--border);border-radius:4px;padding:.3rem .5rem;color:var(--text);font-size:.875rem;margin-right:.75rem';
+  for (const b of branches) {
+    const opt = document.createElement('option');
+    opt.value = b.name;
+    opt.textContent = b.name;
+    if (b.name === defaultBranch) opt.selected = true;
+    select.appendChild(opt);
+  }
+
+  const confirmBtn = document.createElement('button');
+  confirmBtn.className = 'btn-primary';
+  confirmBtn.style.cssText = 'width:auto;display:inline-flex;margin-top:.5rem';
+  confirmBtn.textContent = 'Use this repository';
+  confirmBtn.addEventListener('click', () => selectRepo(repo.owner.login, repo.name, select.value));
+
+  panel.innerHTML = `<div style="color:var(--text-muted);margin-bottom:.5rem">Select branch:</div>`;
+  panel.appendChild(select);
+  panel.appendChild(document.createElement('br'));
+  panel.appendChild(confirmBtn);
+}
+
+function selectRepo(owner, repo, branch) {
+  localStorage.setItem(LS.OWNER, owner);
+  localStorage.setItem(LS.REPO, repo);
+  localStorage.setItem(LS.BRANCH, branch);
+  if (!localStorage.getItem(LS.PATH)) localStorage.setItem(LS.PATH, 'results');
+  location.reload();
+}
+
+// --- Settings panel ---
+
+function openSettingsPanel() {
+  document.getElementById('cfg-path').value = localStorage.getItem(LS.PATH) || 'results';
+  document.getElementById('settings-panel').style.display = 'flex';
+}
+
+// --- Dashboard ---
+
+async function loadDashboard(cfg) {
+  const login  = localStorage.getItem(LS.USER_LOGIN);
+  const avatar = localStorage.getItem(LS.USER_AVATAR);
+  const userBar = document.getElementById('user-bar');
+  userBar.style.display = 'flex';
+  userBar.innerHTML = `
+    ${avatar ? `<img src="${esc(avatar)}" alt="">` : ''}
+    ${login ? `<span>@${esc(login)}</span>` : ''}
+    <span style="flex:1"></span>
+    <button class="btn-link" id="settings-btn">&#9881; Settings</button>
+  `;
+  document.getElementById('settings-btn').addEventListener('click', openSettingsPanel);
+
+  document.getElementById('cfg-cancel').addEventListener('click', () => {
+    document.getElementById('settings-panel').style.display = 'none';
+  });
+  document.getElementById('cfg-save').addEventListener('click', () => {
+    localStorage.setItem(LS.PATH, document.getElementById('cfg-path').value.trim() || 'results');
+    location.reload();
+  });
+  document.getElementById('change-repo-btn').addEventListener('click', () => {
+    [LS.OWNER, LS.REPO, LS.BRANCH].forEach(k => localStorage.removeItem(k));
+    location.reload();
+  });
+  document.getElementById('sign-out-btn').addEventListener('click', signOut);
+
+  function showError(msg) {
+    document.getElementById('error-container').innerHTML = `<div class="error">${msg}</div>`;
+  }
+
+  let reports = [];
+
+  try {
+    const octokit = new Octokit(cfg.token ? { auth: cfg.token } : {});
+    const base = { owner: cfg.owner, repo: cfg.repo, ref: cfg.branch };
+
+    const { data: entries } = await octokit.rest.repos.getContent({ ...base, path: cfg.path });
+    if (!Array.isArray(entries)) throw new Error(`Expected a directory at "${cfg.path}" but got a file.`);
 
     const jsonFiles = entries.filter(e => e.type === 'file' && e.name.endsWith('.json') && e.name !== 'index.json');
-    if (jsonFiles.length === 0) throw new Error(`No JSON result files found in ${ghCfg.owner}/${ghCfg.repo}/${ghCfg.path}.`);
+    if (jsonFiles.length === 0) throw new Error(`No JSON result files found in ${cfg.owner}/${cfg.repo}/${cfg.path}.`);
 
     const loaded = await Promise.all(jsonFiles.map(async entry => {
       try {
@@ -376,350 +853,156 @@ import { Octokit } from 'https://esm.sh/@octokit/rest';
           const r = await fetch(entry.download_url);
           if (r.ok) return r.json();
         }
-        // Private repo fallback: base64-encoded content from Contents API
         const { data } = await octokit.rest.repos.getContent({ ...base, path: entry.path });
         return JSON.parse(atob(data.content.replace(/\n/g, '')));
       } catch { return null; }
     }));
 
     reports = loaded
-      .filter(r => r && r.timestamp && r.aggregated)
+      .filter(r => r && r.timestamp && Array.isArray(r.tests))
       .sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
   } catch (e) {
     if (e.status === 401 || e.status === 403) {
-      showError(`GitHub authentication error (${e.status}). Click &#9881; to enter a Personal Access Token.`);
-      openSettingsModal();
+      signOut();
     } else {
-      showError(`Could not load results from GitHub (${ghCfg.owner}/${ghCfg.repo}, branch: ${ghCfg.branch}, path: ${ghCfg.path}). ${e.message}`);
+      showError(`Could not load results from GitHub (${cfg.owner}/${cfg.repo}, branch: ${cfg.branch}, path: ${cfg.path}). ${e.message}`);
     }
     return;
   }
 
-  if (reports.length === 0) {
-    showError('No valid reports found.');
-    return;
-  }
+  if (reports.length === 0) { showError('No valid reports found.'); return; }
 
-  const latest = reports[reports.length - 1];
-  const previous = reports.length > 1 ? reports[reports.length - 2] : null;
+  const latest   = reports[reports.length - 1];
+  const previous = [...reports].reverse().find(report => report !== latest && reportHasNdcg(report)) || null;
 
-  // --- Config bar ---
-  const repoCfg = latest.config;
+  const totalTests = latest.summary?.totalTests ?? latest.tests?.length ?? 0;
+  const passedTests = latest.summary?.passedTests ?? latest.tests?.filter(t => testStatus(t) === 'passed').length ?? 0;
+  const failedTests = latest.summary?.failedTests ?? Math.max(0, totalTests - passedTests);
+
+  document.getElementById('summary-total').textContent = fmtInt(totalTests);
+  document.getElementById('summary-passed').textContent = fmtInt(passedTests);
+  document.getElementById('summary-failed').textContent = fmtInt(failedTests);
+
+  // Config bar
   {
+    const repoCfg = latest.config;
     const bar = document.getElementById('config-bar');
     bar.style.display = 'flex';
     bar.innerHTML = [
-      `<span>Source: <strong>${esc(ghCfg.owner)}/${esc(ghCfg.repo)}</strong> @ ${esc(ghCfg.branch)}</span>`,
-      repoCfg && repoCfg.workspace && `<span>Workspace: <strong>${esc(repoCfg.workspace)}</strong></span>`,
-      repoCfg && repoCfg.api && `<span>API: <strong>${esc(repoCfg.api)}</strong></span>`,
-      repoCfg && repoCfg.endpoints && `<span>Endpoints: <strong>${esc(repoCfg.endpoints.join(' > '))}</strong></span>`,
-      latest.summary && `<span>Tests: <strong>${latest.summary.totalTests}</strong></span>`,
+      `<span>Source: <strong>${esc(cfg.owner)}/${esc(cfg.repo)}</strong> @ ${esc(cfg.branch)}</span>`,
+      repoCfg?.workspace && `<span>Workspace: <strong>${esc(repoCfg.workspace)}</strong></span>`,
+      repoCfg?.api       && `<span>API: <strong>${esc(repoCfg.api)}</strong></span>`,
+      repoCfg?.endpoints && `<span>Endpoints: <strong>${esc(repoCfg.endpoints.join(' > '))}</strong></span>`,
+      latest.summary     && `<span>Tests: <strong>${latest.summary.totalTests}</strong></span>`,
+      `<span>Passed: <strong>${passedTests}</strong></span>`,
+      `<span>Failed: <strong>${failedTests}</strong></span>`,
       `<span>Latest: <strong>${formatDate(latest.timestamp)}</strong></span>`,
     ].filter(Boolean).join('');
   }
 
-  // --- Hero stat ---
-  const ndcgVal = latest.aggregated.mean.ndcg;
-  document.getElementById('stat-ndcg').textContent = fmt(ndcgVal);
-  if (previous) {
-    const prev = previous.aggregated.mean.ndcg;
-    const delta = ndcgVal - prev;
-    const el = document.getElementById('delta-ndcg');
+  // Hero stat
+  const ndcgVal = latest.aggregated?.mean?.ndcg ?? null;
+  const ndcgEl = document.getElementById('stat-ndcg');
+  const ndcgDeltaEl = document.getElementById('delta-ndcg');
+  const ndcgDescEl = document.getElementById('ndcg-description');
+  ndcgEl.textContent = fmt(ndcgVal);
+  ndcgDeltaEl.textContent = '';
+  ndcgDeltaEl.className = 'delta same';
+  ndcgDescEl.textContent = ndcgVal == null
+    ? 'Unavailable because every test in the latest report failed.'
+    : 'How close the search results are to a perfect ranking.';
+
+  if (ndcgVal != null && previous?.aggregated?.mean?.ndcg != null) {
+    const delta = ndcgVal - previous.aggregated.mean.ndcg;
     if (Math.abs(delta) < 0.0005) {
-      el.textContent = 'no change';
-      el.className = 'delta same';
+      ndcgDeltaEl.textContent = 'no change'; ndcgDeltaEl.className = 'delta same';
     } else {
-      const arrow = delta > 0 ? '\u25B2' : '\u25BC';
-      el.textContent = `${arrow} ${fmt(Math.abs(delta))}`;
-      el.className = `delta ${delta > 0 ? 'up' : 'down'}`;
+      ndcgDeltaEl.textContent = `${delta > 0 ? '▲' : '▼'} ${fmt(Math.abs(delta))}`;
+      ndcgDeltaEl.className = `delta ${delta > 0 ? 'up' : 'down'}`;
     }
   }
 
-  // --- Main chart ---
+  // Chart
   drawMainChart(reports);
-  // Scroll chart container to the right so latest value is visible
   const chartContainer = document.querySelector('.chart-container');
   chartContainer.scrollLeft = chartContainer.scrollWidth;
 
-  // --- Tests table ---
+  // Table
   const testHistory = buildTestHistory(reports);
-  let sortKey = 'query';
-  let sortDir = 1;
-  let filterText = '';
+  let sortKey = 'query', sortDir = 1, filterText = '';
 
   function renderTable() {
     const tbody = document.getElementById('tests-body');
     let tests = latest.tests.slice();
 
-    // Filter out tests without assessments
-    tests = tests.filter(t => t.totalRelevant > 0);
-
     if (filterText) {
       const q = filterText.toLowerCase();
-      tests = tests.filter(t =>
-        Object.values(t.queryParams || {}).some(v => String(v).toLowerCase().includes(q))
-      );
+      tests = tests.filter(t => {
+        const queryMatch = Object.values(t.queryParams || {}).some(v => String(v).toLowerCase().includes(q));
+        const errorMatch = String(t.error || '').toLowerCase().includes(q);
+        return queryMatch || errorMatch;
+      });
     }
 
     tests.sort((a, b) => {
       if (sortKey === 'query') {
-        const qa = Object.values(a.queryParams || {}).join(' ');
-        const qb = Object.values(b.queryParams || {}).join(' ');
-        return sortDir * qa.localeCompare(qb);
+        return sortDir * Object.values(a.queryParams||{}).join(' ').localeCompare(Object.values(b.queryParams||{}).join(' '));
       }
-      return sortDir * ((a.metrics[sortKey] || 0) - (b.metrics[sortKey] || 0));
+      if (sortKey === 'status') {
+        return sortDir * testStatus(a).localeCompare(testStatus(b));
+      }
+      return sortDir * ((testMetric(a, sortKey) || 0) - (testMetric(b, sortKey) || 0));
     });
 
     tbody.innerHTML = '';
+    if (tests.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="5" class="loading">No tests match this filter.</td></tr>';
+      return;
+    }
+
     for (const t of tests) {
       const tr = document.createElement('tr');
-      const queryText = Object.values(t.queryParams || {}).join(', ');
-      const history = testHistory[t.testId] || {};
-      const vals = history.ndcg || [];
+      const queryText  = Object.values(t.queryParams || {}).join(', ');
+      const vals       = (testHistory[t.testId] || {}).ndcg || [];
       const sparkColor = sparklineColor(vals);
-      const scoreStyle = metricScoreColor(t.metrics.ndcg);
-
+      const status = testStatus(t);
+      const ndcg = testMetric(t, 'ndcg');
+      const scoreStyle = metricScoreColor(ndcg);
+      const errorText = status === 'failed' ? (t.error || 'Unknown error') : '—';
       tr.innerHTML = `
         <td class="query-text" title="${esc(queryText)}">${esc(queryText)}</td>
-        <td class="metric-cell"${scoreStyle ? ` style="${scoreStyle}"` : ''}>${fmt(t.metrics.ndcg)}</td>
-        <td class="sparkline-cell"><canvas width="64" height="24" data-test="${esc(t.testId)}" data-color="${sparkColor}"></canvas></td>
+        <td class="status-cell">
+          <span class="status-badge ${status}">
+            <span class="status-dot"></span>${esc(status)}
+          </span>
+        </td>
+        <td class="metric-cell"${scoreStyle ? ` style="${scoreStyle}"` : ''}>${fmt(ndcg)}</td>
+        <td class="${status === 'failed' ? 'error-text' : ''}" title="${esc(errorText)}">${esc(errorText)}</td>
+        <td class="sparkline-cell">${status === 'passed' ? `<canvas width="64" height="24" data-test="${esc(t.testId)}" data-color="${sparkColor}"></canvas>` : ''}</td>
       `;
       tbody.appendChild(tr);
     }
 
-    // Draw sparklines
     tbody.querySelectorAll('canvas').forEach(c => {
-      const tid = c.dataset.test;
-      const color = c.dataset.color;
-      const hist = testHistory[tid];
-      if (hist && hist.ndcg && hist.ndcg.length > 1) {
-        drawSparkline(c, hist.ndcg, color);
-      }
+      const hist = testHistory[c.dataset.test];
+      if (hist?.ndcg?.length > 1) drawSparkline(c, hist.ndcg, c.dataset.color);
     });
-  }
-
-  function metricScoreColor(value) {
-    if (value == null) return '';
-    if (value < 0.25) return 'color: var(--red)';
-    if (value > 0.75) return 'color: var(--green)';
-    return 'color: var(--orange)';
-  }
-
-  function sparklineColor(values) {
-    if (values.length < 2) return '#e6edf3';
-    const last = values[values.length - 1];
-    const prev = values[values.length - 2];
-    const delta = last - prev;
-    if (Math.abs(delta) < 0.0005) return '#e6edf3';
-    return delta > 0 ? '#3fb950' : '#f85149';
   }
 
   renderTable();
 
-  // Sort on header click
   document.querySelectorAll('thead th[data-sort]').forEach(th => {
     th.addEventListener('click', () => {
       const key = th.dataset.sort;
-      if (sortKey === key) { sortDir *= -1; }
-      else { sortKey = key; sortDir = key === 'query' ? 1 : -1; }
+      if (sortKey === key) { sortDir *= -1; } else { sortKey = key; sortDir = key === 'query' ? 1 : -1; }
       document.querySelectorAll('thead th').forEach(h => h.classList.remove('sorted'));
       th.classList.add('sorted');
       renderTable();
     });
   });
 
-  document.getElementById('search-input').addEventListener('input', e => {
-    filterText = e.target.value;
-    renderTable();
-  });
+  document.getElementById('search-input').addEventListener('input', e => { filterText = e.target.value; renderTable(); });
 
-  // --- Chart drawing (pure canvas, no dependencies) ---
-
-  function drawMainChart(reports) {
-    const canvas = document.getElementById('main-chart');
-    const container = canvas.parentElement;
-    const containerRect = container.getBoundingClientRect();
-    const dpr = window.devicePixelRatio || 1;
-
-    const MIN_POINT_SPACING = 80;
-    const n = reports.length;
-    const neededWidth = Math.max(containerRect.width, (n - 1) * MIN_POINT_SPACING + 70);
-    const W = neededWidth;
-    const H = containerRect.height;
-
-    canvas.width = W * dpr;
-    canvas.height = H * dpr;
-    canvas.style.width = W + 'px';
-    canvas.style.height = H + 'px';
-    const ctx = canvas.getContext('2d');
-    ctx.scale(dpr, dpr);
-
-    const pad = { top: 20, right: 20, bottom: 50, left: 50 };
-    const plotW = W - pad.left - pad.right;
-    const plotH = H - pad.top - pad.bottom;
-
-    // Background
-    ctx.fillStyle = '#0d1117';
-    ctx.fillRect(0, 0, W, H);
-
-    // Grid lines
-    ctx.strokeStyle = '#21262d';
-    ctx.lineWidth = 1;
-    for (let i = 0; i <= 4; i++) {
-      const y = pad.top + plotH * (1 - i / 4);
-      ctx.beginPath();
-      ctx.moveTo(pad.left, y);
-      ctx.lineTo(pad.left + plotW, y);
-      ctx.stroke();
-
-      ctx.fillStyle = '#8b949e';
-      ctx.font = '11px -apple-system, sans-serif';
-      ctx.textAlign = 'right';
-      ctx.fillText((i / 4).toFixed(2), pad.left - 8, y + 4);
-    }
-
-    // X axis labels
-    ctx.textAlign = 'center';
-    ctx.fillStyle = '#8b949e';
-    ctx.font = '11px -apple-system, sans-serif';
-    for (let i = 0; i < n; i++) {
-      const x = n === 1 ? pad.left + plotW / 2 : pad.left + (i / (n - 1)) * plotW;
-      const label = formatDateShort(reports[i].timestamp);
-      ctx.save();
-      ctx.translate(x, pad.top + plotH + 12);
-      ctx.rotate(-Math.PI / 6);
-      ctx.textAlign = 'right';
-      ctx.fillText(label, 0, 0);
-      ctx.restore();
-    }
-
-    // Draw nDCG line
-    const values = reports.map(r => r.aggregated.mean.ndcg);
-    ctx.strokeStyle = '#bc8cff';
-    ctx.lineWidth = 2;
-    ctx.lineJoin = 'round';
-    ctx.beginPath();
-    for (let i = 0; i < n; i++) {
-      const x = n === 1 ? pad.left + plotW / 2 : pad.left + (i / (n - 1)) * plotW;
-      const y = pad.top + plotH * (1 - values[i]);
-      if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
-    }
-    ctx.stroke();
-
-    // Dots
-    for (let i = 0; i < n; i++) {
-      const x = n === 1 ? pad.left + plotW / 2 : pad.left + (i / (n - 1)) * plotW;
-      const y = pad.top + plotH * (1 - values[i]);
-      ctx.fillStyle = '#bc8cff';
-      ctx.beginPath();
-      ctx.arc(x, y, 3.5, 0, Math.PI * 2);
-      ctx.fill();
-    }
-
-    // Tooltip on hover
-    canvas.addEventListener('mousemove', e => {
-      const bounds = canvas.getBoundingClientRect();
-      const mx = e.clientX - bounds.left;
-      const my = e.clientY - bounds.top;
-
-      let closest = null;
-      let minDist = 20;
-      for (let i = 0; i < n; i++) {
-        const x = n === 1 ? pad.left + plotW / 2 : pad.left + (i / (n - 1)) * plotW;
-        const y = pad.top + plotH * (1 - values[i]);
-        const dist = Math.sqrt((mx - x) ** 2 + (my - y) ** 2);
-        if (dist < minDist) {
-          minDist = dist;
-          closest = { i, x, y, val: values[i] };
-        }
-      }
-
-      canvas.style.cursor = closest ? 'crosshair' : 'default';
-      canvas.title = closest
-        ? `nDCG: ${fmt(closest.val)} (${formatDate(reports[closest.i].timestamp)})`
-        : '';
-    });
-  }
-
-  function drawSparkline(canvas, values, color) {
-    const dpr = window.devicePixelRatio || 1;
-    const w = canvas.width / dpr;
-    const h = canvas.height / dpr;
-    canvas.width = w * dpr;
-    canvas.height = h * dpr;
-    canvas.style.width = w + 'px';
-    canvas.style.height = h + 'px';
-    const ctx = canvas.getContext('2d');
-    ctx.scale(dpr, dpr);
-
-    const n = values.length;
-    const padY = 3;
-    const plotH = h - padY * 2;
-
-    ctx.strokeStyle = color;
-    ctx.lineWidth = 1.5;
-    ctx.lineJoin = 'round';
-    ctx.beginPath();
-    for (let i = 0; i < n; i++) {
-      const x = n === 1 ? w / 2 : (i / (n - 1)) * w;
-      const y = padY + plotH * (1 - values[i]);
-      if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
-    }
-    ctx.stroke();
-
-    // Dot on last value
-    const lastX = n === 1 ? w / 2 : w;
-    const lastY = padY + plotH * (1 - values[n - 1]);
-    ctx.fillStyle = color;
-    ctx.beginPath();
-    ctx.arc(lastX, lastY, 2, 0, Math.PI * 2);
-    ctx.fill();
-  }
-
-  // --- Helpers ---
-
-  function buildTestHistory(reports) {
-    const history = {};
-    for (const report of reports) {
-      if (!report.tests) continue;
-      for (const test of report.tests) {
-        if (!history[test.testId]) {
-          history[test.testId] = { ndcg: [] };
-        }
-        history[test.testId].ndcg.push(test.metrics.ndcg || 0);
-      }
-    }
-    return history;
-  }
-
-  function fmt(v) {
-    return v == null ? '--' : v.toFixed(3);
-  }
-
-  function esc(s) {
-    const d = document.createElement('div');
-    d.textContent = s;
-    return d.innerHTML;
-  }
-
-  function formatDate(iso) {
-    try {
-      const d = new Date(iso);
-      return d.toLocaleString('en-GB', {
-        year: 'numeric', month: 'short', day: 'numeric',
-        hour: '2-digit', minute: '2-digit'
-      });
-    } catch { return iso; }
-  }
-
-  function formatDateShort(iso) {
-    try {
-      const d = new Date(iso);
-      return d.toLocaleString('en-GB', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
-    } catch { return iso; }
-  }
-
-  // Redraw main chart on resize, preserving scroll position at the right edge
   let resizeTimer;
   window.addEventListener('resize', () => {
     clearTimeout(resizeTimer);
@@ -730,7 +1013,150 @@ import { Octokit } from 'https://esm.sh/@octokit/rest';
       if (wasAtEnd) container.scrollLeft = container.scrollWidth;
     }, 150);
   });
-})();
+}
+
+// --- Chart drawing ---
+
+function drawMainChart(reports) {
+  const canvas = document.getElementById('main-chart');
+  const container = canvas.parentElement;
+  const dpr = window.devicePixelRatio || 1;
+  const n = reports.length;
+  const W = Math.max(container.getBoundingClientRect().width, (n - 1) * 80 + 70);
+  const H = container.getBoundingClientRect().height;
+
+  canvas.width = W * dpr; canvas.height = H * dpr;
+  canvas.style.width = W + 'px'; canvas.style.height = H + 'px';
+  const ctx = canvas.getContext('2d');
+  ctx.scale(dpr, dpr);
+
+  const pad = { top: 20, right: 20, bottom: 50, left: 50 };
+  const plotW = W - pad.left - pad.right;
+  const plotH = H - pad.top - pad.bottom;
+
+  ctx.fillStyle = '#0d1117';
+  ctx.fillRect(0, 0, W, H);
+
+  ctx.strokeStyle = '#21262d'; ctx.lineWidth = 1;
+  for (let i = 0; i <= 4; i++) {
+    const y = pad.top + plotH * (1 - i / 4);
+    ctx.beginPath(); ctx.moveTo(pad.left, y); ctx.lineTo(pad.left + plotW, y); ctx.stroke();
+    ctx.fillStyle = '#8b949e'; ctx.font = '11px -apple-system, sans-serif'; ctx.textAlign = 'right';
+    ctx.fillText((i / 4).toFixed(2), pad.left - 8, y + 4);
+  }
+
+  ctx.textAlign = 'center'; ctx.fillStyle = '#8b949e'; ctx.font = '11px -apple-system, sans-serif';
+  for (let i = 0; i < n; i++) {
+    const x = n === 1 ? pad.left + plotW / 2 : pad.left + (i / (n - 1)) * plotW;
+    ctx.save(); ctx.translate(x, pad.top + plotH + 12); ctx.rotate(-Math.PI / 6); ctx.textAlign = 'right';
+    ctx.fillText(formatDateShort(reports[i].timestamp), 0, 0); ctx.restore();
+  }
+
+  const points = reports
+    .map((report, index) => ({ index, value: report?.aggregated?.mean?.ndcg }))
+    .filter(point => point.value != null);
+
+  if (points.length === 0) {
+    ctx.fillStyle = '#8b949e';
+    ctx.font = '13px -apple-system, sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText('No successful evaluations available yet.', pad.left + plotW / 2, pad.top + plotH / 2);
+    return;
+  }
+
+  ctx.strokeStyle = '#bc8cff'; ctx.lineWidth = 2; ctx.lineJoin = 'round';
+  ctx.beginPath();
+  for (let i = 0; i < points.length; i++) {
+    const x = n === 1 ? pad.left + plotW / 2 : pad.left + (points[i].index / (n - 1)) * plotW;
+    const y = pad.top + plotH * (1 - points[i].value);
+    if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+  }
+  ctx.stroke();
+
+  for (const point of points) {
+    const x = n === 1 ? pad.left + plotW / 2 : pad.left + (point.index / (n - 1)) * plotW;
+    const y = pad.top + plotH * (1 - point.value);
+    ctx.fillStyle = '#bc8cff'; ctx.beginPath(); ctx.arc(x, y, 3.5, 0, Math.PI * 2); ctx.fill();
+  }
+
+  canvas.addEventListener('mousemove', e => {
+    const bounds = canvas.getBoundingClientRect();
+    const mx = e.clientX - bounds.left, my = e.clientY - bounds.top;
+    let closest = null, minDist = 20;
+    for (const point of points) {
+      const x = n === 1 ? pad.left + plotW / 2 : pad.left + (point.index / (n - 1)) * plotW;
+      const y = pad.top + plotH * (1 - point.value);
+      const dist = Math.sqrt((mx - x) ** 2 + (my - y) ** 2);
+      if (dist < minDist) { minDist = dist; closest = { i: point.index, val: point.value }; }
+    }
+    canvas.style.cursor = closest ? 'crosshair' : 'default';
+    canvas.title = closest ? `nDCG: ${fmt(closest.val)} (${formatDate(reports[closest.i].timestamp)})` : '';
+  });
+}
+
+function drawSparkline(canvas, values, color) {
+  const dpr = window.devicePixelRatio || 1;
+  const w = canvas.width / dpr, h = canvas.height / dpr;
+  canvas.width = w * dpr; canvas.height = h * dpr;
+  canvas.style.width = w + 'px'; canvas.style.height = h + 'px';
+  const ctx = canvas.getContext('2d');
+  ctx.scale(dpr, dpr);
+  const n = values.length, padY = 3, plotH = h - padY * 2;
+  ctx.strokeStyle = color; ctx.lineWidth = 1.5; ctx.lineJoin = 'round';
+  ctx.beginPath();
+  for (let i = 0; i < n; i++) {
+    const x = n === 1 ? w / 2 : (i / (n - 1)) * w;
+    const y = padY + plotH * (1 - values[i]);
+    if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+  }
+  ctx.stroke();
+  ctx.fillStyle = color; ctx.beginPath();
+  ctx.arc(n === 1 ? w / 2 : w, padY + plotH * (1 - values[n - 1]), 2, 0, Math.PI * 2); ctx.fill();
+}
+
+// --- Misc helpers ---
+
+function buildTestHistory(reports) {
+  const history = {};
+  for (const report of reports) {
+    if (!report.tests) continue;
+    for (const test of report.tests) {
+      if (testStatus(test) !== 'passed') continue;
+      if (!history[test.testId]) history[test.testId] = { ndcg: [] };
+      history[test.testId].ndcg.push(testMetric(test, 'ndcg') || 0);
+    }
+  }
+  return history;
+}
+
+function metricScoreColor(value) {
+  if (value == null) return '';
+  if (value < 0.25) return 'color: var(--red)';
+  if (value > 0.75) return 'color: var(--green)';
+  return 'color: var(--orange)';
+}
+
+function sparklineColor(values) {
+  if (values.length < 2) return '#e6edf3';
+  const delta = values[values.length - 1] - values[values.length - 2];
+  if (Math.abs(delta) < 0.0005) return '#e6edf3';
+  return delta > 0 ? '#3fb950' : '#f85149';
+}
+
+// --- Entry point ---
+
+async function main() {
+  const s = deriveState();
+  if (s.state === 'UNAUTHENTICATED') {
+    showSignInScreen();
+  } else if (s.state === 'AUTHENTICATED') {
+    await showRepoPicker(s.token);
+  } else {
+    await loadDashboard(s);
+  }
+}
+
+main();
 </script>
 </body>
 </html>
