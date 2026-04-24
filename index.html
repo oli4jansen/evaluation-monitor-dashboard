@@ -1,0 +1,613 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Evaluation Monitor - Metrics Dashboard</title>
+<style>
+  :root {
+    --bg: #0d1117;
+    --surface: #161b22;
+    --border: #30363d;
+    --text: #e6edf3;
+    --text-muted: #8b949e;
+    --accent: #58a6ff;
+    --green: #3fb950;
+    --red: #f85149;
+    --orange: #d29922;
+    --purple: #bc8cff;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.5;
+    padding: 2rem;
+    max-width: 1200px;
+    margin: 0 auto;
+  }
+
+  h1 {
+    font-size: 1.5rem;
+    font-weight: 600;
+    margin-bottom: 0.25rem;
+  }
+
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
+  }
+
+  .card h2 {
+    font-size: 0.75rem;
+    font-weight: 600;
+    margin-bottom: 1rem;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+
+  /* Hero stat */
+  .hero-stat {
+    text-align: center;
+    padding: 1.5rem 0 1rem;
+  }
+
+  .hero-stat .label {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+
+  .hero-stat .value {
+    font-size: 3rem;
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+    color: var(--purple);
+    line-height: 1.2;
+  }
+
+  .hero-stat .delta {
+    font-size: 0.9rem;
+    margin-top: 0.25rem;
+  }
+
+  .hero-stat .description {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    margin-top: 0.5rem;
+  }
+
+  .delta.up { color: var(--green); }
+  .delta.down { color: var(--red); }
+  .delta.same { color: var(--text-muted); }
+
+  .chart-container {
+    position: relative;
+    width: 100%;
+    height: 280px;
+  }
+
+  canvas { display: block; }
+
+  /* Tests table */
+  .table-controls {
+    display: flex;
+    gap: 0.75rem;
+    margin-bottom: 1rem;
+    align-items: center;
+    flex-wrap: wrap;
+  }
+
+  .table-controls input {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 0.4rem 0.75rem;
+    color: var(--text);
+    font-size: 0.875rem;
+    flex: 1;
+    min-width: 200px;
+  }
+
+  .table-controls input::placeholder { color: var(--text-muted); }
+  .table-controls input:focus { outline: none; border-color: var(--accent); }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.875rem;
+  }
+
+  thead th {
+    text-align: left;
+    padding: 0.5rem 0.75rem;
+    border-bottom: 1px solid var(--border);
+    color: var(--text-muted);
+    font-weight: 600;
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    cursor: pointer;
+    user-select: none;
+    white-space: nowrap;
+  }
+
+  thead th:hover { color: var(--text); }
+  thead th.sorted { color: var(--accent); }
+
+  tbody td {
+    padding: 0.5rem 0.75rem;
+    border-bottom: 1px solid var(--border);
+    font-variant-numeric: tabular-nums;
+  }
+
+  tbody tr:hover { background: rgba(88, 166, 255, 0.04); }
+
+  .query-text {
+    max-width: 240px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .metric-cell {
+    text-align: right;
+    white-space: nowrap;
+  }
+
+  .sparkline-cell {
+    width: 80px;
+    min-width: 80px;
+  }
+
+  .sparkline-cell canvas {
+    vertical-align: middle;
+  }
+
+  .loading {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 200px;
+    color: var(--text-muted);
+  }
+
+  .error {
+    color: var(--red);
+    padding: 1rem;
+    border: 1px solid var(--red);
+    border-radius: 6px;
+    background: rgba(248, 81, 73, 0.1);
+  }
+
+  .config-info {
+    display: flex;
+    gap: 1.5rem;
+    flex-wrap: wrap;
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    margin-bottom: 1rem;
+  }
+
+  .config-info span {
+    background: var(--bg);
+    padding: 0.2rem 0.6rem;
+    border-radius: 4px;
+    border: 1px solid var(--border);
+  }
+
+  @media (max-width: 768px) {
+    body { padding: 1rem; }
+    .hero-stat .value { font-size: 2.25rem; }
+  }
+</style>
+</head>
+<body>
+
+<h1>Evaluation Monitor</h1>
+
+<div id="error-container"></div>
+
+<div id="config-bar" class="config-info" style="display:none"></div>
+
+<div class="card">
+  <div class="hero-stat">
+    <div class="label">nDCG</div>
+    <div class="value" id="stat-ndcg">--</div>
+    <div class="delta same" id="delta-ndcg"></div>
+    <div class="description">How close the search results are to a perfect ranking.</div>
+  </div>
+  <div class="chart-container">
+    <canvas id="main-chart"></canvas>
+  </div>
+</div>
+
+<div class="card">
+  <h2>Per-Test Results (Latest Report)</h2>
+  <div class="table-controls">
+    <input type="text" id="search-input" placeholder="Filter by query...">
+  </div>
+  <div style="overflow-x:auto">
+    <table>
+      <thead>
+        <tr>
+          <th data-sort="query" class="sorted">Query</th>
+          <th data-sort="ndcg" class="metric-cell" title="How close the search results are to a perfect ranking.">nDCG</th>
+          <th class="sparkline-cell"></th>
+        </tr>
+      </thead>
+      <tbody id="tests-body">
+        <tr><td colspan="3" class="loading">Loading...</td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<script>
+(async function() {
+  const MAX_REPORTS = 10;
+
+  // --- Data loading ---
+
+  const basePath = 'results/';
+
+  function showError(msg) {
+    document.getElementById('error-container').innerHTML =
+      `<div class="error">${msg}</div>`;
+  }
+
+  async function fetchJSON(url) {
+    const resp = await fetch(url);
+    if (!resp.ok) throw new Error(`Failed to fetch ${url}: ${resp.status}`);
+    return resp.json();
+  }
+
+  let reports = [];
+
+  try {
+    const manifest = await fetchJSON(basePath + 'index.json');
+    const toLoad = manifest.slice(0, MAX_REPORTS);
+    const loaded = await Promise.all(
+      toLoad.map(f => fetchJSON(basePath + f).catch(() => null))
+    );
+    reports = loaded
+      .filter(r => r && r.timestamp && r.aggregated)
+      .sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
+  } catch (e) {
+    showError(`Could not load report manifest. Make sure <code>results/index.json</code> exists and lists the report filenames. (${e.message})`);
+    return;
+  }
+
+  if (reports.length === 0) {
+    showError('No valid reports found.');
+    return;
+  }
+
+  const latest = reports[reports.length - 1];
+  const previous = reports.length > 1 ? reports[reports.length - 2] : null;
+
+  // --- Config bar ---
+  const cfg = latest.config;
+  if (cfg) {
+    const bar = document.getElementById('config-bar');
+    bar.style.display = 'flex';
+    bar.innerHTML = [
+      cfg.workspace && `<span>Workspace: <strong>${esc(cfg.workspace)}</strong></span>`,
+      cfg.api && `<span>API: <strong>${esc(cfg.api)}</strong></span>`,
+      cfg.endpoints && `<span>Endpoints: <strong>${esc(cfg.endpoints.join(' > '))}</strong></span>`,
+      latest.summary && `<span>Tests: <strong>${latest.summary.totalTests}</strong></span>`,
+      `<span>Latest: <strong>${formatDate(latest.timestamp)}</strong></span>`,
+    ].filter(Boolean).join('');
+  }
+
+  // --- Hero stat ---
+  const ndcgVal = latest.aggregated.mean.ndcg;
+  document.getElementById('stat-ndcg').textContent = fmt(ndcgVal);
+  if (previous) {
+    const prev = previous.aggregated.mean.ndcg;
+    const delta = ndcgVal - prev;
+    const el = document.getElementById('delta-ndcg');
+    if (Math.abs(delta) < 0.0005) {
+      el.textContent = 'no change';
+      el.className = 'delta same';
+    } else {
+      const arrow = delta > 0 ? '\u25B2' : '\u25BC';
+      el.textContent = `${arrow} ${fmt(Math.abs(delta))}`;
+      el.className = `delta ${delta > 0 ? 'up' : 'down'}`;
+    }
+  }
+
+  // --- Main chart ---
+  drawMainChart(reports);
+
+  // --- Tests table ---
+  const testHistory = buildTestHistory(reports);
+  let sortKey = 'query';
+  let sortDir = 1;
+  let filterText = '';
+
+  function renderTable() {
+    const tbody = document.getElementById('tests-body');
+    let tests = latest.tests.slice();
+
+    // Filter out tests without assessments
+    tests = tests.filter(t => t.totalRelevant > 0);
+
+    if (filterText) {
+      const q = filterText.toLowerCase();
+      tests = tests.filter(t =>
+        Object.values(t.queryParams || {}).some(v => String(v).toLowerCase().includes(q))
+      );
+    }
+
+    tests.sort((a, b) => {
+      if (sortKey === 'query') {
+        const qa = Object.values(a.queryParams || {}).join(' ');
+        const qb = Object.values(b.queryParams || {}).join(' ');
+        return sortDir * qa.localeCompare(qb);
+      }
+      return sortDir * ((a.metrics[sortKey] || 0) - (b.metrics[sortKey] || 0));
+    });
+
+    tbody.innerHTML = '';
+    for (const t of tests) {
+      const tr = document.createElement('tr');
+      const queryText = Object.values(t.queryParams || {}).join(', ');
+      const history = testHistory[t.testId] || {};
+      const vals = history.ndcg || [];
+      const sparkColor = sparklineColor(vals);
+      const scoreStyle = metricScoreColor(t.metrics.ndcg);
+
+      tr.innerHTML = `
+        <td class="query-text" title="${esc(queryText)}">${esc(queryText)}</td>
+        <td class="metric-cell"${scoreStyle ? ` style="${scoreStyle}"` : ''}>${fmt(t.metrics.ndcg)}</td>
+        <td class="sparkline-cell"><canvas width="64" height="24" data-test="${esc(t.testId)}" data-color="${sparkColor}"></canvas></td>
+      `;
+      tbody.appendChild(tr);
+    }
+
+    // Draw sparklines
+    tbody.querySelectorAll('canvas').forEach(c => {
+      const tid = c.dataset.test;
+      const color = c.dataset.color;
+      const hist = testHistory[tid];
+      if (hist && hist.ndcg && hist.ndcg.length > 1) {
+        drawSparkline(c, hist.ndcg, color);
+      }
+    });
+  }
+
+  function metricScoreColor(value) {
+    if (value == null) return '';
+    if (value < 0.25) return 'color: var(--red)';
+    if (value > 0.75) return 'color: var(--green)';
+    return 'color: var(--orange)';
+  }
+
+  function sparklineColor(values) {
+    if (values.length < 2) return '#e6edf3';
+    const last = values[values.length - 1];
+    const prev = values[values.length - 2];
+    const delta = last - prev;
+    if (Math.abs(delta) < 0.0005) return '#e6edf3';
+    return delta > 0 ? '#3fb950' : '#f85149';
+  }
+
+  renderTable();
+
+  // Sort on header click
+  document.querySelectorAll('thead th[data-sort]').forEach(th => {
+    th.addEventListener('click', () => {
+      const key = th.dataset.sort;
+      if (sortKey === key) { sortDir *= -1; }
+      else { sortKey = key; sortDir = key === 'query' ? 1 : -1; }
+      document.querySelectorAll('thead th').forEach(h => h.classList.remove('sorted'));
+      th.classList.add('sorted');
+      renderTable();
+    });
+  });
+
+  document.getElementById('search-input').addEventListener('input', e => {
+    filterText = e.target.value;
+    renderTable();
+  });
+
+  // --- Chart drawing (pure canvas, no dependencies) ---
+
+  function drawMainChart(reports) {
+    const canvas = document.getElementById('main-chart');
+    const rect = canvas.parentElement.getBoundingClientRect();
+    const dpr = window.devicePixelRatio || 1;
+    canvas.width = rect.width * dpr;
+    canvas.height = rect.height * dpr;
+    canvas.style.width = rect.width + 'px';
+    canvas.style.height = rect.height + 'px';
+    const ctx = canvas.getContext('2d');
+    ctx.scale(dpr, dpr);
+    const W = rect.width;
+    const H = rect.height;
+
+    const pad = { top: 20, right: 20, bottom: 50, left: 50 };
+    const plotW = W - pad.left - pad.right;
+    const plotH = H - pad.top - pad.bottom;
+    const n = reports.length;
+
+    // Background
+    ctx.fillStyle = '#0d1117';
+    ctx.fillRect(0, 0, W, H);
+
+    // Grid lines
+    ctx.strokeStyle = '#21262d';
+    ctx.lineWidth = 1;
+    for (let i = 0; i <= 4; i++) {
+      const y = pad.top + plotH * (1 - i / 4);
+      ctx.beginPath();
+      ctx.moveTo(pad.left, y);
+      ctx.lineTo(pad.left + plotW, y);
+      ctx.stroke();
+
+      ctx.fillStyle = '#8b949e';
+      ctx.font = '11px -apple-system, sans-serif';
+      ctx.textAlign = 'right';
+      ctx.fillText((i / 4).toFixed(2), pad.left - 8, y + 4);
+    }
+
+    // X axis labels
+    ctx.textAlign = 'center';
+    ctx.fillStyle = '#8b949e';
+    ctx.font = '11px -apple-system, sans-serif';
+    for (let i = 0; i < n; i++) {
+      const x = n === 1 ? pad.left + plotW / 2 : pad.left + (i / (n - 1)) * plotW;
+      const label = formatDateShort(reports[i].timestamp);
+      ctx.save();
+      ctx.translate(x, pad.top + plotH + 12);
+      ctx.rotate(-Math.PI / 6);
+      ctx.textAlign = 'right';
+      ctx.fillText(label, 0, 0);
+      ctx.restore();
+    }
+
+    // Draw nDCG line
+    const values = reports.map(r => r.aggregated.mean.ndcg);
+    ctx.strokeStyle = '#bc8cff';
+    ctx.lineWidth = 2;
+    ctx.lineJoin = 'round';
+    ctx.beginPath();
+    for (let i = 0; i < n; i++) {
+      const x = n === 1 ? pad.left + plotW / 2 : pad.left + (i / (n - 1)) * plotW;
+      const y = pad.top + plotH * (1 - values[i]);
+      if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+    }
+    ctx.stroke();
+
+    // Dots
+    for (let i = 0; i < n; i++) {
+      const x = n === 1 ? pad.left + plotW / 2 : pad.left + (i / (n - 1)) * plotW;
+      const y = pad.top + plotH * (1 - values[i]);
+      ctx.fillStyle = '#bc8cff';
+      ctx.beginPath();
+      ctx.arc(x, y, 3.5, 0, Math.PI * 2);
+      ctx.fill();
+    }
+
+    // Tooltip on hover
+    canvas.addEventListener('mousemove', e => {
+      const bounds = canvas.getBoundingClientRect();
+      const mx = e.clientX - bounds.left;
+      const my = e.clientY - bounds.top;
+
+      let closest = null;
+      let minDist = 20;
+      for (let i = 0; i < n; i++) {
+        const x = n === 1 ? pad.left + plotW / 2 : pad.left + (i / (n - 1)) * plotW;
+        const y = pad.top + plotH * (1 - values[i]);
+        const dist = Math.sqrt((mx - x) ** 2 + (my - y) ** 2);
+        if (dist < minDist) {
+          minDist = dist;
+          closest = { i, x, y, val: values[i] };
+        }
+      }
+
+      canvas.style.cursor = closest ? 'crosshair' : 'default';
+      canvas.title = closest
+        ? `nDCG: ${fmt(closest.val)} (${formatDate(reports[closest.i].timestamp)})`
+        : '';
+    });
+  }
+
+  function drawSparkline(canvas, values, color) {
+    const dpr = window.devicePixelRatio || 1;
+    const w = canvas.width / dpr;
+    const h = canvas.height / dpr;
+    canvas.width = w * dpr;
+    canvas.height = h * dpr;
+    canvas.style.width = w + 'px';
+    canvas.style.height = h + 'px';
+    const ctx = canvas.getContext('2d');
+    ctx.scale(dpr, dpr);
+
+    const n = values.length;
+    const padY = 3;
+    const plotH = h - padY * 2;
+
+    ctx.strokeStyle = color;
+    ctx.lineWidth = 1.5;
+    ctx.lineJoin = 'round';
+    ctx.beginPath();
+    for (let i = 0; i < n; i++) {
+      const x = n === 1 ? w / 2 : (i / (n - 1)) * w;
+      const y = padY + plotH * (1 - values[i]);
+      if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+    }
+    ctx.stroke();
+
+    // Dot on last value
+    const lastX = n === 1 ? w / 2 : w;
+    const lastY = padY + plotH * (1 - values[n - 1]);
+    ctx.fillStyle = color;
+    ctx.beginPath();
+    ctx.arc(lastX, lastY, 2, 0, Math.PI * 2);
+    ctx.fill();
+  }
+
+  // --- Helpers ---
+
+  function buildTestHistory(reports) {
+    const history = {};
+    for (const report of reports) {
+      if (!report.tests) continue;
+      for (const test of report.tests) {
+        if (!history[test.testId]) {
+          history[test.testId] = { ndcg: [] };
+        }
+        history[test.testId].ndcg.push(test.metrics.ndcg || 0);
+      }
+    }
+    return history;
+  }
+
+  function fmt(v) {
+    return v == null ? '--' : v.toFixed(3);
+  }
+
+  function esc(s) {
+    const d = document.createElement('div');
+    d.textContent = s;
+    return d.innerHTML;
+  }
+
+  function formatDate(iso) {
+    try {
+      const d = new Date(iso);
+      return d.toLocaleString('en-GB', {
+        year: 'numeric', month: 'short', day: 'numeric',
+        hour: '2-digit', minute: '2-digit'
+      });
+    } catch { return iso; }
+  }
+
+  function formatDateShort(iso) {
+    try {
+      const d = new Date(iso);
+      return d.toLocaleString('en-GB', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
+    } catch { return iso; }
+  }
+
+  // Redraw main chart on resize
+  let resizeTimer;
+  window.addEventListener('resize', () => {
+    clearTimeout(resizeTimer);
+    resizeTimer = setTimeout(() => drawMainChart(reports), 150);
+  });
+})();
+</script>
+</body>
+</html>
