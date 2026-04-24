@@ -93,6 +93,7 @@
     position: relative;
     width: 100%;
     height: 280px;
+    overflow-x: auto;
   }
 
   canvas { display: block; }
@@ -212,6 +213,58 @@
 </head>
 <body>
 
+<button id="settings-btn" title="Configure GitHub source"
+  style="position:fixed;top:1rem;right:1rem;background:var(--surface);border:1px solid var(--border);
+         border-radius:6px;padding:0.4rem 0.7rem;color:var(--text);cursor:pointer;font-size:1rem;z-index:100">
+  &#9881;
+</button>
+
+<div id="settings-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);
+     z-index:200;align-items:center;justify-content:center">
+  <div style="background:var(--surface);border:1px solid var(--border);border-radius:8px;
+              padding:1.5rem;width:min(480px,90vw);display:flex;flex-direction:column;gap:1rem">
+    <h2 style="margin:0;font-size:1rem">GitHub Source</h2>
+    <label style="font-size:.875rem;display:flex;flex-direction:column;gap:.3rem">Owner
+      <input id="cfg-owner" placeholder="your-org"
+        style="background:var(--bg);border:1px solid var(--border);border-radius:4px;
+               padding:.4rem .6rem;color:var(--text);font-size:.875rem">
+    </label>
+    <label style="font-size:.875rem;display:flex;flex-direction:column;gap:.3rem">Repository
+      <input id="cfg-repo" placeholder="your-repo"
+        style="background:var(--bg);border:1px solid var(--border);border-radius:4px;
+               padding:.4rem .6rem;color:var(--text);font-size:.875rem">
+    </label>
+    <label style="font-size:.875rem;display:flex;flex-direction:column;gap:.3rem">Branch
+      <input id="cfg-branch" placeholder="main"
+        style="background:var(--bg);border:1px solid var(--border);border-radius:4px;
+               padding:.4rem .6rem;color:var(--text);font-size:.875rem">
+    </label>
+    <label style="font-size:.875rem;display:flex;flex-direction:column;gap:.3rem">Results path
+      <input id="cfg-path" placeholder="results"
+        style="background:var(--bg);border:1px solid var(--border);border-radius:4px;
+               padding:.4rem .6rem;color:var(--text);font-size:.875rem">
+    </label>
+    <label style="font-size:.875rem;display:flex;flex-direction:column;gap:.3rem">
+      Personal Access Token <span style="color:var(--text-muted);font-weight:400">(private repos — stored in localStorage only)</span>
+      <input id="cfg-token" type="password" placeholder="ghp_..."
+        style="background:var(--bg);border:1px solid var(--border);border-radius:4px;
+               padding:.4rem .6rem;color:var(--text);font-size:.875rem">
+    </label>
+    <div style="display:flex;gap:.75rem;justify-content:flex-end">
+      <button id="cfg-cancel"
+        style="background:transparent;border:1px solid var(--border);border-radius:6px;
+               padding:.4rem .9rem;color:var(--text);cursor:pointer;font-size:.875rem">
+        Cancel
+      </button>
+      <button id="cfg-save"
+        style="background:var(--accent);border:none;border-radius:6px;
+               padding:.4rem .9rem;color:#000;cursor:pointer;font-size:.875rem;font-weight:600">
+        Save &amp; Reload
+      </button>
+    </div>
+  </div>
+</div>
+
 <h1>Evaluation Monitor</h1>
 
 <div id="error-container"></div>
@@ -251,38 +304,94 @@
   </div>
 </div>
 
-<script>
+<script type="module">
+import { Octokit } from 'https://esm.sh/@octokit/rest';
+
 (async function() {
-  const MAX_REPORTS = 10;
+  // --- GitHub config ---
 
-  // --- Data loading ---
+  function getConfig() {
+    const p = new URLSearchParams(location.search);
+    return {
+      owner:  p.get('owner')  || localStorage.getItem('gh_owner')  || '',
+      repo:   p.get('repo')   || localStorage.getItem('gh_repo')   || '',
+      branch: p.get('branch') || localStorage.getItem('gh_branch') || 'main',
+      path:   p.get('path')   || localStorage.getItem('gh_path')   || 'results',
+      token:  localStorage.getItem('gh_token') || null,
+    };
+  }
 
-  const basePath = 'results/';
+  function openSettingsModal() {
+    const c = getConfig();
+    document.getElementById('cfg-owner').value  = c.owner;
+    document.getElementById('cfg-repo').value   = c.repo;
+    document.getElementById('cfg-branch').value = c.branch;
+    document.getElementById('cfg-path').value   = c.path;
+    document.getElementById('cfg-token').value  = c.token || '';
+    document.getElementById('settings-modal').style.display = 'flex';
+  }
+
+  document.getElementById('settings-btn').addEventListener('click', openSettingsModal);
+  document.getElementById('cfg-cancel').addEventListener('click', () => {
+    document.getElementById('settings-modal').style.display = 'none';
+  });
+  document.getElementById('cfg-save').addEventListener('click', () => {
+    localStorage.setItem('gh_owner',  document.getElementById('cfg-owner').value.trim());
+    localStorage.setItem('gh_repo',   document.getElementById('cfg-repo').value.trim());
+    localStorage.setItem('gh_branch', document.getElementById('cfg-branch').value.trim());
+    localStorage.setItem('gh_path',   document.getElementById('cfg-path').value.trim());
+    const tok = document.getElementById('cfg-token').value.trim();
+    if (tok) localStorage.setItem('gh_token', tok);
+    else localStorage.removeItem('gh_token');
+    location.reload();
+  });
 
   function showError(msg) {
     document.getElementById('error-container').innerHTML =
       `<div class="error">${msg}</div>`;
   }
 
-  async function fetchJSON(url) {
-    const resp = await fetch(url);
-    if (!resp.ok) throw new Error(`Failed to fetch ${url}: ${resp.status}`);
-    return resp.json();
-  }
-
+  const ghCfg = getConfig();
   let reports = [];
 
+  if (!ghCfg.owner || !ghCfg.repo) {
+    showError('No GitHub repository configured. Click &#9881; to set owner, repo, branch, and (optionally) a Personal Access Token.');
+    openSettingsModal();
+    return;
+  }
+
   try {
-    const manifest = await fetchJSON(basePath + 'index.json');
-    const toLoad = manifest.slice(0, MAX_REPORTS);
-    const loaded = await Promise.all(
-      toLoad.map(f => fetchJSON(basePath + f).catch(() => null))
-    );
+    const octokit = new Octokit(ghCfg.token ? { auth: ghCfg.token } : {});
+    const base = { owner: ghCfg.owner, repo: ghCfg.repo, ref: ghCfg.branch };
+
+    const { data: entries } = await octokit.rest.repos.getContent({ ...base, path: ghCfg.path });
+    if (!Array.isArray(entries)) throw new Error(`Expected a directory at "${ghCfg.path}" but got a file.`);
+
+    const jsonFiles = entries.filter(e => e.type === 'file' && e.name.endsWith('.json') && e.name !== 'index.json');
+    if (jsonFiles.length === 0) throw new Error(`No JSON result files found in ${ghCfg.owner}/${ghCfg.repo}/${ghCfg.path}.`);
+
+    const loaded = await Promise.all(jsonFiles.map(async entry => {
+      try {
+        if (entry.download_url) {
+          const r = await fetch(entry.download_url);
+          if (r.ok) return r.json();
+        }
+        // Private repo fallback: base64-encoded content from Contents API
+        const { data } = await octokit.rest.repos.getContent({ ...base, path: entry.path });
+        return JSON.parse(atob(data.content.replace(/\n/g, '')));
+      } catch { return null; }
+    }));
+
     reports = loaded
       .filter(r => r && r.timestamp && r.aggregated)
       .sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
   } catch (e) {
-    showError(`Could not load report manifest. Make sure <code>results/index.json</code> exists and lists the report filenames. (${e.message})`);
+    if (e.status === 401 || e.status === 403) {
+      showError(`GitHub authentication error (${e.status}). Click &#9881; to enter a Personal Access Token.`);
+      openSettingsModal();
+    } else {
+      showError(`Could not load results from GitHub (${ghCfg.owner}/${ghCfg.repo}, branch: ${ghCfg.branch}, path: ${ghCfg.path}). ${e.message}`);
+    }
     return;
   }
 
@@ -295,14 +404,15 @@
   const previous = reports.length > 1 ? reports[reports.length - 2] : null;
 
   // --- Config bar ---
-  const cfg = latest.config;
-  if (cfg) {
+  const repoCfg = latest.config;
+  {
     const bar = document.getElementById('config-bar');
     bar.style.display = 'flex';
     bar.innerHTML = [
-      cfg.workspace && `<span>Workspace: <strong>${esc(cfg.workspace)}</strong></span>`,
-      cfg.api && `<span>API: <strong>${esc(cfg.api)}</strong></span>`,
-      cfg.endpoints && `<span>Endpoints: <strong>${esc(cfg.endpoints.join(' > '))}</strong></span>`,
+      `<span>Source: <strong>${esc(ghCfg.owner)}/${esc(ghCfg.repo)}</strong> @ ${esc(ghCfg.branch)}</span>`,
+      repoCfg && repoCfg.workspace && `<span>Workspace: <strong>${esc(repoCfg.workspace)}</strong></span>`,
+      repoCfg && repoCfg.api && `<span>API: <strong>${esc(repoCfg.api)}</strong></span>`,
+      repoCfg && repoCfg.endpoints && `<span>Endpoints: <strong>${esc(repoCfg.endpoints.join(' > '))}</strong></span>`,
       latest.summary && `<span>Tests: <strong>${latest.summary.totalTests}</strong></span>`,
       `<span>Latest: <strong>${formatDate(latest.timestamp)}</strong></span>`,
     ].filter(Boolean).join('');
@@ -327,6 +437,9 @@
 
   // --- Main chart ---
   drawMainChart(reports);
+  // Scroll chart container to the right so latest value is visible
+  const chartContainer = document.querySelector('.chart-container');
+  chartContainer.scrollLeft = chartContainer.scrollWidth;
 
   // --- Tests table ---
   const testHistory = buildTestHistory(reports);
@@ -424,21 +537,26 @@
 
   function drawMainChart(reports) {
     const canvas = document.getElementById('main-chart');
-    const rect = canvas.parentElement.getBoundingClientRect();
+    const container = canvas.parentElement;
+    const containerRect = container.getBoundingClientRect();
     const dpr = window.devicePixelRatio || 1;
-    canvas.width = rect.width * dpr;
-    canvas.height = rect.height * dpr;
-    canvas.style.width = rect.width + 'px';
-    canvas.style.height = rect.height + 'px';
+
+    const MIN_POINT_SPACING = 80;
+    const n = reports.length;
+    const neededWidth = Math.max(containerRect.width, (n - 1) * MIN_POINT_SPACING + 70);
+    const W = neededWidth;
+    const H = containerRect.height;
+
+    canvas.width = W * dpr;
+    canvas.height = H * dpr;
+    canvas.style.width = W + 'px';
+    canvas.style.height = H + 'px';
     const ctx = canvas.getContext('2d');
     ctx.scale(dpr, dpr);
-    const W = rect.width;
-    const H = rect.height;
 
     const pad = { top: 20, right: 20, bottom: 50, left: 50 };
     const plotW = W - pad.left - pad.right;
     const plotH = H - pad.top - pad.bottom;
-    const n = reports.length;
 
     // Background
     ctx.fillStyle = '#0d1117';
@@ -601,11 +719,16 @@
     } catch { return iso; }
   }
 
-  // Redraw main chart on resize
+  // Redraw main chart on resize, preserving scroll position at the right edge
   let resizeTimer;
   window.addEventListener('resize', () => {
     clearTimeout(resizeTimer);
-    resizeTimer = setTimeout(() => drawMainChart(reports), 150);
+    resizeTimer = setTimeout(() => {
+      const container = document.querySelector('.chart-container');
+      const wasAtEnd = container.scrollLeft + container.clientWidth >= container.scrollWidth - 2;
+      drawMainChart(reports);
+      if (wasAtEnd) container.scrollLeft = container.scrollWidth;
+    }, 150);
   });
 })();
 </script>
