@@ -9,16 +9,6 @@ This dashboard is served from GitHub Pages and now authenticates with a GitHub A
 
 The frontend uses Authorization Code Flow with PKCE. The Worker holds the GitHub App client secret and exposes CORS-enabled `/exchange` and `/refresh` endpoints for the frontend.
 
-## GitHub App setup
-
-Create a GitHub App and configure:
-
-- Callback URL: your deployed GitHub Pages URL, for example `https://oli4jansen.github.io/evaluation-monitor-dashboard/`
-- User permissions: at minimum, repository `Contents: Read-only`
-- Optional: user `Email addresses: Read-only` if you later want email access
-
-Install the app on the account or organization that owns the repositories you want to browse.
-
 ## Cloudflare Worker setup
 
 1. Install Wrangler and authenticate with Cloudflare.
