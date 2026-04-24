@@ -141,7 +141,7 @@
     margin-top: 0.2rem;
   }
   .summary-pill.passed .pill-value { color: var(--green); }
-  .summary-pill.failed .pill-value { color: var(--red); }
+  .summary-pill.failed .pill-vatestStatuslue { color: var(--red); }
   .summary-pill.total .pill-value { color: var(--accent); }
 
   .loading { display: flex; align-items: center; justify-content: center; height: 200px; color: var(--text-muted); }
@@ -372,6 +372,10 @@ function formatDateShort(iso) {
 
 function reportHasNdcg(report) {
   return Boolean(report?.aggregated?.mean && typeof report.aggregated.mean.ndcg === 'number');
+}
+
+function testStatus(test) {
+  return test?.status || (test && test.metrics ? 'passed' : 'failed');
 }
 
 function testMetric(test, key) {
