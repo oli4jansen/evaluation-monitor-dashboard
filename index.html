@@ -39,8 +39,8 @@
     overflow-x: hidden;
   }
 
-  h1 { font-size: clamp(2.5rem, 5vw, 4.2rem); font-weight: 600; letter-spacing: -0.05em; line-height: 0.96; font-family: "Space Grotesk"; }
-  h2 { font-size: 1.2rem; font-weight: 600; letter-spacing: -0.02em; font-family: "Space Grotesk"; }
+  h1 { font-size: 2.5rem; font-weight: 600; line-height: 0.96; font-family: "Space Grotesk"; }
+  h2 { font-size: 1.2rem; font-weight: 600; font-family: "Space Grotesk"; }
   p { color: var(--text-muted); }
 
   .page-shell {
@@ -51,8 +51,7 @@
   }
 
   .masthead {
-    padding: 1.5rem 0 1.5rem;
-    margin-bottom: 0.5rem;
+    padding: 1.25rem 0 0.25rem;
   }
 
   .eyebrow {
@@ -111,7 +110,6 @@
     font-family: "Space Grotesk";
     color: var(--text);
     line-height: 0.94;
-    letter-spacing: -0.06em;
   }
   .hero-stat .delta {
     font-size: 0.9rem;
@@ -296,11 +294,17 @@
     margin: 0.5rem 0;
   }
   .config-info span {
-    background: #e7edf4;
+    background: rgb(231 237 244 / 60%);
     color: var(--bg);
     padding: 0.25rem 0.75rem;
     border-radius: 999px;
     border: none;
+    font-size: 0.85rem;
+    font-size: 1rem;
+    transition: background .15s ease;
+  }
+  .config-info span:hover {
+    background: rgb(231 237 244);
   }
 
   /* Auth UI */
