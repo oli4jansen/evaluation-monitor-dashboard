@@ -23,8 +23,10 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Inject OAuth Client ID
-        run: sed -i "s/YOUR_OAUTH_APP_CLIENT_ID_HERE/${{ vars.OAUTH_CLIENT_ID }}/g" index.html
+      - name: Inject GitHub App config
+        run: |
+          sed -i "s|YOUR_GITHUB_APP_CLIENT_ID_HERE|${{ vars.GH_APP_CLIENT_ID }}|g" index.html
+          sed -i "s|YOUR_AUTH_API_BASE_URL_HERE|${{ vars.AUTH_API_BASE_URL }}|g" index.html
 
       - uses: actions/configure-pages@v5
 

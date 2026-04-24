@@ -365,25 +365,29 @@ import { Octokit } from 'https://esm.sh/@octokit/rest';
 
 /*
  * SETUP (one time):
- * 1. GitHub Settings → Developer Settings → OAuth Apps → New OAuth App
- * 2. Homepage URL: URL where this file is served
- * 3. Check "Enable Device Flow"
- * 4. Store the Client ID in repo Settings → Secrets and variables → Actions → Variables
- *    as OAUTH_CLIENT_ID. The deploy workflow injects it below at build time.
+ * 1. GitHub Settings → Developer Settings → GitHub Apps → New GitHub App
+ * 2. Callback URL: URL where this file is served
+ * 3. Grant the minimum permissions needed to read repository contents
+ * 4. Deploy the token broker in /worker and store its public base URL in
+ *    repo Settings → Secrets and variables → Actions → Variables as AUTH_API_BASE_URL
+ * 5. Store the GitHub App client ID in repo Settings → Secrets and variables → Actions
+ *    → Variables as GH_APP_CLIENT_ID. The deploy workflow injects both values below.
  */
-const CLIENT_ID = 'YOUR_OAUTH_APP_CLIENT_ID_HERE';
+const CLIENT_ID = 'YOUR_GITHUB_APP_CLIENT_ID_HERE';
+const AUTH_API_BASE_URL = 'YOUR_AUTH_API_BASE_URL_HERE';
 
 const LS = {
   TOKEN:      'gh_token',
+  REFRESH_TOKEN: 'gh_refresh_token',
+  EXPIRES_AT: 'gh_expires_at',
   OWNER:      'gh_owner',
   REPO:       'gh_repo',
   BRANCH:     'gh_branch',
   PATH:       'gh_path',
   USER_LOGIN: 'gh_user_login',
   USER_AVATAR:'gh_user_avatar',
+  OAUTH_STATE: 'gh_oauth_state',
 };
-
-const sleep = ms => new Promise(r => setTimeout(r, ms));
 
 // --- Helpers ---
 
@@ -418,6 +422,134 @@ function testStatus(test) {
 
 function testMetric(test, key) {
   return testStatus(test) === 'passed' ? test?.metrics?.[key] ?? null : null;
+}
+
+function hasAuthConfig() {
+  return !CLIENT_ID.includes('YOUR_') && !AUTH_API_BASE_URL.includes('YOUR_');
+}
+
+function redirectUri() {
+  return `${location.origin}${location.pathname}`;
+}
+
+function createRandomString(byteLength = 32) {
+  const bytes = new Uint8Array(byteLength);
+  crypto.getRandomValues(bytes);
+  return base64UrlEncode(bytes);
+}
+
+function base64UrlEncode(input) {
+  const bytes = input instanceof Uint8Array ? input : new TextEncoder().encode(String(input));
+  let binary = '';
+  for (const byte of bytes) binary += String.fromCharCode(byte);
+  return btoa(binary).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/g, '');
+}
+
+async function sha256Base64Url(input) {
+  const digest = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(input));
+  return base64UrlEncode(new Uint8Array(digest));
+}
+
+function authApiUrl(path) {
+  return `${AUTH_API_BASE_URL.replace(/\/$/, '')}${path}`;
+}
+
+function authHeaders() {
+  return { 'Accept': 'application/json', 'Content-Type': 'application/json' };
+}
+
+function cleanupAuthParams() {
+  const url = new URL(location.href);
+  ['code', 'state', 'error', 'error_description', 'installation_id', 'setup_action'].forEach(key => url.searchParams.delete(key));
+  history.replaceState(null, '', `${url.pathname}${url.search}${url.hash}`);
+}
+
+function setSessionFromTokenResponse(data) {
+  localStorage.setItem(LS.TOKEN, data.access_token);
+
+  if (data.refresh_token) {
+    localStorage.setItem(LS.REFRESH_TOKEN, data.refresh_token);
+  } else {
+    localStorage.removeItem(LS.REFRESH_TOKEN);
+  }
+
+  if (data.expires_in) {
+    localStorage.setItem(LS.EXPIRES_AT, String(Date.now() + (data.expires_in * 1000)));
+  } else {
+    localStorage.removeItem(LS.EXPIRES_AT);
+  }
+}
+
+async function exchangeCodeForToken(code, codeVerifier) {
+  const res = await fetch(authApiUrl('/exchange'), {
+    method: 'POST',
+    headers: authHeaders(),
+    body: JSON.stringify({
+      code,
+      code_verifier: codeVerifier,
+      redirect_uri: redirectUri(),
+    }),
+  });
+
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok) throw new Error(data.error_description || data.error || 'Token exchange failed');
+  return data;
+}
+
+async function refreshAccessToken(refreshToken) {
+  const res = await fetch(authApiUrl('/refresh'), {
+    method: 'POST',
+    headers: authHeaders(),
+    body: JSON.stringify({ refresh_token: refreshToken }),
+  });
+
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok) throw new Error(data.error_description || data.error || 'Token refresh failed');
+  return data;
+}
+
+async function ensureValidToken() {
+  const token = localStorage.getItem(LS.TOKEN);
+  if (!token) return null;
+
+  const expiresAt = Number(localStorage.getItem(LS.EXPIRES_AT) || '0');
+  const refreshToken = localStorage.getItem(LS.REFRESH_TOKEN);
+
+  if (!expiresAt || expiresAt - Date.now() > 5 * 60 * 1000) return token;
+  if (!refreshToken) return token;
+
+  const data = await refreshAccessToken(refreshToken);
+  setSessionFromTokenResponse(data);
+  return data.access_token;
+}
+
+async function completeOAuthCallbackIfPresent() {
+  const params = new URLSearchParams(location.search);
+  const code = params.get('code');
+  const returnedState = params.get('state');
+  const error = params.get('error');
+
+  if (!code && !error) return;
+
+  if (error) {
+    cleanupAuthParams();
+    throw new Error(params.get('error_description') || error);
+  }
+
+  const expectedState = localStorage.getItem(LS.OAUTH_STATE);
+  const codeVerifier = sessionStorage.getItem('gh_pkce_verifier');
+
+  if (!returnedState || !expectedState || returnedState !== expectedState || !codeVerifier) {
+    cleanupAuthParams();
+    throw new Error('Sign-in could not be verified. Please try again.');
+  }
+
+  const data = await exchangeCodeForToken(code, codeVerifier);
+  setSessionFromTokenResponse(data);
+  sessionStorage.removeItem('gh_pkce_verifier');
+  localStorage.removeItem(LS.OAUTH_STATE);
+  cleanupAuthParams();
+  await cacheUserInfo(data.access_token);
 }
 
 // --- State ---
@@ -457,8 +589,13 @@ function deriveState() {
   return { state: 'AUTHENTICATED', token };
 }
 
-function signOut() {
+function clearSession() {
+  sessionStorage.removeItem('gh_pkce_verifier');
   Object.values(LS).forEach(k => localStorage.removeItem(k));
+}
+
+function signOut() {
+  clearSession();
   location.reload();
 }
 
@@ -473,6 +610,7 @@ function showAuthScreen(html) {
 function showSignInScreen(errorMsg) {
   const urlError = new URLSearchParams(location.search).get('error');
   const msg = errorMsg || (urlError === 'session_expired' ? 'Your session expired. Please sign in again.' : null);
+  const configured = hasAuthConfig();
 
   showAuthScreen(`
     <div class="auth-card">
@@ -481,7 +619,8 @@ function showSignInScreen(errorMsg) {
         <p style="margin-top:.5rem">This dashboard reads evaluation results from a GitHub repository. Sign in to continue.</p>
       </div>
       ${msg ? `<div class="auth-error">${esc(msg)}</div>` : ''}
-      <button class="btn-primary" id="signin-btn">
+      ${!configured ? `<div class="auth-error">Authentication is not configured yet. Set <code>GH_APP_CLIENT_ID</code> and <code>AUTH_API_BASE_URL</code> in the GitHub Pages deploy workflow.</div>` : ''}
+      <button class="btn-primary" id="signin-btn" ${configured ? '' : 'disabled'}>
         <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true">
           <path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38
                    0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13
@@ -494,126 +633,46 @@ function showSignInScreen(errorMsg) {
         </svg>
         Sign in with GitHub
       </button>
-      <p style="font-size:.8rem;text-align:center">Uses GitHub Device Flow. Your credentials are never shared with this app.</p>
+      <p style="font-size:.8rem;text-align:center">Uses a GitHub App with Authorization Code Flow + PKCE.</p>
     </div>
   `);
-  document.getElementById('signin-btn').addEventListener('click', startDeviceFlow);
+  if (configured) document.getElementById('signin-btn').addEventListener('click', startSignIn);
 }
 
-async function startDeviceFlow() {
+async function startSignIn() {
   showAuthScreen(`
     <div class="auth-card">
-      <h2>Connecting to GitHub...</h2>
+      <div>
+        <h2>Redirecting to GitHub...</h2>
+        <p style="margin-top:.5rem">Preparing a secure sign-in request.</p>
+      </div>
       <div style="display:flex;align-items:center;gap:.75rem;color:var(--text-muted);font-size:.875rem">
-        <span class="spinner"></span> Requesting authorization code...
+        <span class="spinner"></span>
+        <span>Generating PKCE challenge...</span>
       </div>
     </div>
   `);
 
   try {
-    const res = await fetch('https://github.com/login/device/code', {
-      method: 'POST',
-      headers: { 'Accept': 'application/json', 'Content-Type': 'application/json' },
-      body: JSON.stringify({ client_id: CLIENT_ID, scope: 'repo read:user' }),
+    const state = createRandomString(24);
+    const codeVerifier = createRandomString(48);
+    const codeChallenge = await sha256Base64Url(codeVerifier);
+
+    localStorage.setItem(LS.OAUTH_STATE, state);
+    sessionStorage.setItem('gh_pkce_verifier', codeVerifier);
+
+    const params = new URLSearchParams({
+      client_id: CLIENT_ID,
+      redirect_uri: redirectUri(),
+      state,
+      code_challenge: codeChallenge,
+      code_challenge_method: 'S256',
     });
-    const data = await res.json();
-    if (!data.device_code) throw new Error(data.error_description || data.error || 'Failed to get device code');
-    showDeviceCodeScreen(data);
-    pollForToken(data.device_code, data.interval || 5, data.expires_in || 900);
+
+    location.assign(`https://github.com/login/oauth/authorize?${params.toString()}`);
   } catch (e) {
-    showSignInScreen(`Failed to start authorization: ${e.message}`);
+    showSignInScreen(`Failed to start sign-in: ${e.message}`);
   }
-}
-
-function showDeviceCodeScreen({ user_code, verification_uri, expires_in }) {
-  const expiryMin = Math.round((expires_in || 900) / 60);
-  showAuthScreen(`
-    <div class="auth-card">
-      <div>
-        <h2>Authorize in GitHub</h2>
-        <p style="margin-top:.5rem">Enter this code at <strong>github.com/login/device</strong>:</p>
-      </div>
-      <div class="device-code">${esc(user_code)}</div>
-      <div style="display:flex;gap:.75rem">
-        <button class="btn-secondary" id="copy-code-btn" style="flex:1">Copy code</button>
-        <a href="${esc(verification_uri)}" target="_blank" rel="noopener" class="btn-primary" style="flex:1">Open GitHub</a>
-      </div>
-      <div style="display:flex;align-items:center;gap:.75rem;color:var(--text-muted);font-size:.875rem">
-        <span class="spinner"></span>
-        <span id="poll-status">Waiting for authorization...</span>
-      </div>
-      <p style="font-size:.8rem;color:var(--text-muted)">Code expires in ~${expiryMin} min.</p>
-      <button class="btn-link" id="cancel-device-btn">Cancel</button>
-    </div>
-  `);
-
-  document.getElementById('copy-code-btn').addEventListener('click', async () => {
-    try {
-      await navigator.clipboard.writeText(user_code);
-      const btn = document.getElementById('copy-code-btn');
-      if (btn) { btn.textContent = 'Copied!'; setTimeout(() => { if (btn.isConnected) btn.textContent = 'Copy code'; }, 2000); }
-    } catch {}
-  });
-
-  document.getElementById('cancel-device-btn').addEventListener('click', () => {
-    window._cancelDeviceFlow = true;
-    showSignInScreen();
-  });
-}
-
-async function pollForToken(deviceCode, intervalSec, expiresIn) {
-  window._cancelDeviceFlow = false;
-  let pollMs = intervalSec * 1000;
-  const deadline = Date.now() + expiresIn * 1000;
-
-  while (Date.now() < deadline) {
-    await sleep(pollMs);
-    if (window._cancelDeviceFlow) return;
-
-    try {
-      const res = await fetch('https://github.com/login/oauth/access_token', {
-        method: 'POST',
-        headers: { 'Accept': 'application/json', 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          client_id: CLIENT_ID,
-          device_code: deviceCode,
-          grant_type: 'urn:ietf:params:oauth:grant-type:device_code',
-        }),
-      });
-      const data = await res.json();
-
-      if (data.access_token) {
-        localStorage.setItem(LS.TOKEN, data.access_token);
-        await cacheUserInfo(data.access_token);
-        await showRepoPicker(data.access_token);
-        return;
-      }
-
-      if (data.error === 'slow_down') { pollMs += 5000; continue; }
-      if (data.error === 'authorization_pending') continue;
-      if (data.error === 'expired_token') {
-        setPollStatus('Code expired.', true);
-        setTimeout(() => showSignInScreen('Authorization code expired. Please try again.'), 1500);
-        return;
-      }
-      if (data.error === 'access_denied') {
-        setTimeout(() => showSignInScreen('Authorization was denied.'), 500);
-        return;
-      }
-      setPollStatus(`Error: ${data.error_description || data.error}`, true);
-      return;
-    } catch {
-      setPollStatus('Network error, retrying...');
-    }
-  }
-
-  setPollStatus('Code expired.', true);
-  setTimeout(() => showSignInScreen('Authorization code expired. Please try again.'), 1500);
-}
-
-function setPollStatus(msg, isError) {
-  const el = document.getElementById('poll-status');
-  if (el) { el.textContent = msg; if (isError) el.style.color = 'var(--red)'; }
 }
 
 async function cacheUserInfo(token) {
@@ -1146,13 +1205,24 @@ function sparklineColor(values) {
 // --- Entry point ---
 
 async function main() {
-  const s = deriveState();
-  if (s.state === 'UNAUTHENTICATED') {
-    showSignInScreen();
-  } else if (s.state === 'AUTHENTICATED') {
-    await showRepoPicker(s.token);
-  } else {
-    await loadDashboard(s);
+  try {
+    if (hasAuthConfig()) {
+      await completeOAuthCallbackIfPresent();
+      const token = await ensureValidToken();
+      if (token && token !== localStorage.getItem(LS.TOKEN)) localStorage.setItem(LS.TOKEN, token);
+    }
+
+    const s = deriveState();
+    if (s.state === 'UNAUTHENTICATED') {
+      showSignInScreen();
+    } else if (s.state === 'AUTHENTICATED') {
+      await showRepoPicker(s.token);
+    } else {
+      await loadDashboard(s);
+    }
+  } catch (e) {
+    clearSession();
+    showSignInScreen(e.message || 'Authentication failed. Please try again.');
   }
 }
 

@@ -1,0 +1,8 @@
+name = "evaluation-monitor-auth"
+main = "src/index.js"
+compatibility_date = "2026-04-24"
+
+[vars]
+# Set this to your GitHub Pages origin, for example:
+# ALLOWED_ORIGIN = "https://oli4jansen.github.io"
+ALLOWED_ORIGIN = "https://oli4jansen.github.io"
